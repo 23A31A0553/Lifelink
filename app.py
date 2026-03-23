@@ -8,8 +8,11 @@ import hashlib
 import json
 from models import db, User, Admin, BloodRequest, DonationHistory, Hospital, AuditLog, SystemSettings, AIConfig, Notification, BloodBag, HospitalRequest, DonorAppointment, BloodDrive, Interest, ChatMessage, ConsentLog, HospitalBroadcast, InventoryHistory, DonorAssignment
 from translations import TRANSLATIONS
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
+# Tell Flask it is behind a proxy (like Render) to fix Rate Limiting (100 per hour issue)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config['SECRET_KEY'] = 'lifelink_secret_key_change_in_production'
 
 import os
