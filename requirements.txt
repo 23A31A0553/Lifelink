@@ -1,0 +1,13 @@
+flask
+flask-sqlalchemy
+flask-login
+flask-mail
+flask-cors
+flask-socketio
+flask-limiter
+geopy
+werkzeug
+email_validator
+mysql-connector-python
+gunicorn==21.2.0
+psycopg2-binary
