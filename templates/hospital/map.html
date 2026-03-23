@@ -1,0 +1,65 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Live Emergency Map</h2>
+</div>
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <p>Viewing all active donors, hospitals, and emergency requests within the network.</p>
+    <div id="map" style="height: 600px; width: 100%; border-radius: 8px; margin-top: 1rem; z-index: 1;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    var map = L.map('map').setView([{{ current_user.latitude or 17.0 }}, {{ current_user.longitude or 81.8 }}], 11);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Current Hospital Marker (Blue)
+    L.circleMarker([{{ current_user.latitude or 17.0 }}, {{ current_user.longitude or 81.8 }}], {
+        color: '#1976d2', fillColor: '#1976d2', fillOpacity: 0.5, radius: 10
+    }).addTo(map).bindPopup("<b>{{ current_user.name }} (You)</b><br>Active Emergency Radius");
+
+    // Donors (Green)
+    var donors = [
+        {% for d in donors if d.latitude and d.longitude %}
+        { lat: {{ d.latitude }}, lng: {{ d.longitude }}, name: "{{ d.full_name }}", bg: "{{ d.blood_group }}" },
+        {% endfor %}
+    ];
+    var donorIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+    });
+    donors.forEach(function(d) {
+        L.marker([d.lat, d.lng], {icon: donorIcon}).addTo(map)
+         .bindPopup("<b>" + d.name + "</b><br>Blood Group: " + d.bg + "<br>Eligible Donor");
+    });
+
+    // Requisitions (Red)
+    var reqs = [
+        {% for r in reqs if r.req_latitude and r.req_longitude %}
+        { lat: {{ r.req_latitude }}, lng: {{ r.req_longitude }}, patient: "{{ r.patient_name }}", bg: "{{ r.blood_group }}", urgency: "{{ r.urgency_level }}" },
+        {% endfor %}
+    ];
+    var reqIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+    });
+    reqs.forEach(function(r) {
+        L.marker([r.lat, r.lng], {icon: reqIcon}).addTo(map)
+         .bindPopup("<b>Emergency Request</b><br>Patient: " + r.patient + "<br>Needs: " + r.bg + "<br>Urgency: <span style='color:red'>" + r.urgency + "</span>");
+    });
+
+    // Emergency Radius Circle (50km)
+    L.circle([{{ current_user.latitude or 17.0 }}, {{ current_user.longitude or 81.8 }}], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.1,
+        radius: 50000 // meters
+    }).addTo(map);
+</script>
+{% endblock %}

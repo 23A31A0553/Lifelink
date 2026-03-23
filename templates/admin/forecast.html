@@ -1,0 +1,49 @@
+{% extends 'admin/base.html' %}
+{% block title %}AI Demand Forecast{% endblock %}
+
+{% block content %}
+<div class="grid" style="margin-bottom: 2rem;">
+    {% for group, status in predictions.items() %}
+    <div class="card"
+        style="text-align: center; border-left: 5px solid {{ 'red' if 'Critical' in status else 'green' }};">
+        <h3 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ group }}</h3>
+        <span style="
+            background: {{ '#ffebee' if 'Critical' in status or 'High' in status else '#e8f5e9' }}; 
+            color: {{ '#c62828' if 'Critical' in status or 'High' in status else '#2e7d32' }}; 
+            padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+            {{ status }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h3>Predicted Demand Trend (Next 6 Months)</h3>
+    <canvas id="trendChart"></canvas>
+</div>
+
+<script>
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Projected Blood Units Needed',
+                data: {{ trend | tojson }}
+    },
+        borderColor: '#4361ee',
+        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+        tension: 0.4,
+        fill: true
+            }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+        }
+    }
+    });
+</script>
+{% endblock %}

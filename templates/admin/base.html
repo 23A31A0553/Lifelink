@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLink Admin Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin_style.css') }}?v={{ range(1, 10000) | random }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+    <style>
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--dark);
+        }
+    </style>
+</head>
+
+<body class="admin-body">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-heartbeat"></i> LifeLink Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' else '' }}"><i class="fas fa-tachometer-alt"></i>
+                    Dashboard</a></li>
+            <li><a href="{{ url_for('admin_donors') }}" class="{{ 'active' if request.endpoint == 'admin_donors' else '' }}"><i class="fas fa-users"></i> Donors</a></li>
+            <li><a href="{{ url_for('admin_requests') }}" class="{{ 'active' if request.endpoint == 'admin_requests' else '' }}"><i class="fas fa-notes-medical"></i> Requests</a></li>
+            <li><a href="{{ url_for('manage_hospitals') }}" class="{{ 'active' if request.endpoint == 'manage_hospitals' or request.endpoint == 'reset_hospital_password' else '' }}"><i class="fas fa-hospital"></i> Hospitals</a></li>
+            <li><a href="{{ url_for('admin_inventory') }}" class="{{ 'active' if request.endpoint == 'admin_inventory' else '' }}"><i class="fas fa-tint"></i> Inventory</a></li>
+            <li><a href="{{ url_for('admin_forecast') }}" class="{{ 'active' if request.endpoint == 'admin_forecast' else '' }}"><i class="fas fa-brain"></i> AI Forecast</a></li>
+            <li><a href="{{ url_for('admin_audit_logs') }}" class="{{ 'active' if request.endpoint == 'admin_audit_logs' else '' }}"><i class="fas fa-history"></i> Audit Logs</a></li>
+            <li><a href="{{ url_for('admin_settings') }}" class="{{ 'active' if request.endpoint == 'admin_settings' else '' }}"><i class="fas fa-cog"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <h2>{% block title %}Dashboard{% endblock %}</h2>
+            <div class="user-info">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode"
+                    style="margin-right: 15px;">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <span>{{ current_user.username }}</span>
+                <i class="fas fa-user-circle fa-2x"></i>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="content-wrapper">
+            {% block content %}{% endblock %}
+        </div>
+
+        <footer style="text-align: center; padding: 1rem; color: #666; font-size: 0.9rem; margin-top: auto;">
+            <p>&copy; 2025 Devashish. All Rights Reserved.</p>
+        </footer>
+    </main>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+    </script>
+</body>
+
+</html>

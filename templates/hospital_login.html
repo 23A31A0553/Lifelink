@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hospital-login-bg">
+    <div class="glass-panel hover-lift" style="transition-duration: 0.5s; max-width: 450px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-hospital-symbol" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="color: white; font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700;">Hospital Portal</h2>
+            <p style="color: #ddd;">Access your institutional dashboard.</p>
+        </div>
+
+        {% if error %}
+        <div style="background: rgba(255, 51, 102, 0.2); border-left: 4px solid var(--primary); color: #fff; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 0.95rem;">
+            <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('hospital_login') }}">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="color: #eee; font-weight: 500; font-size: 0.95rem;">Registered Mobile Number</label>
+                <div style="position: relative;">
+                    <i class="fas fa-phone-alt" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa;"></i>
+                    <input type="text" name="mobile_number" required style="width: 100%; padding: 12px 12px 12px 45px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; transition: all 0.3s; font-size: 1rem;">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 2.5rem;">
+                <label style="color: #eee; font-weight: 500; font-size: 0.95rem;">Password</label>
+                <div style="position: relative;">
+                    <i class="fas fa-lock" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa;"></i>
+                    <input type="password" name="password" id="hosp_password" required
+                        style="width: 100%; padding: 12px 45px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; transition: all 0.3s; font-size: 1rem;">
+                    <i class="fas fa-eye" id="toggleHospPassword"
+                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #aaa; transition: color 0.3s;"
+                        onmouseover="this.style.color='white'" onmouseout="this.style.color='#aaa'"
+                        onclick="toggleVisibility('hosp_password', 'toggleHospPassword')"></i>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-glow" style="width: 100%; padding: 14px; font-size: 1.1rem; border-radius: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                Authenticate <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+            </button>
+            <p class="trust-copy">
+                <i class="fas fa-shield-alt" style="color: var(--accent);"></i> Secure login for verified hospitals only
+            </p>
+            
+            <p class="text-center" style="margin-top: 2rem; color: #ddd; font-size: 0.95rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                New Hospital? <a href="{{ url_for('hospital_register') }}" style="color: var(--primary); font-weight: 600; text-decoration: none;">Register Here</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

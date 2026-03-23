@@ -1,0 +1,125 @@
+{% extends 'admin/base.html' %}
+{% block title %}Donor Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>Registered Donors ({{ donors|length }})</h3>
+        <input type="text" id="searchInput" placeholder="Search donors..."
+            style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table id="donorTable">
+            <thead>
+                <tr>
+                    <th>Review</th>
+                    <th>Name / Mobile</th>
+                    <th>Group</th>
+                    <th>Location</th>
+                    <th>Last Active</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in donors %}
+                <tr>
+                    <td>
+                        <div
+                            style="width: 40px; height: 40px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary);">
+                            {{ donor.full_name[0] }}
+                        </div>
+                    </td>
+                    <td>
+                        <strong>{{ donor.full_name }}</strong><br>
+                        <small style="color: grey;">{{ donor.mobile_number }}</small>
+                    </td>
+                    <td>
+                        <span
+                            style="background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 4px; font-weight: bold;">
+                            {{ donor.blood_group }}
+                        </span>
+                    </td>
+                    <td>{{ donor.city }}</td>
+                    <td>
+                        {% if donor.last_active %}
+                        <span style="color: green;">● Online</span>
+                        {% else %}
+                        <span style="color: grey;">Ofline</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if donor.is_locked %}
+                        <span style="color: red; font-weight: bold;">BLOCKED</span>
+                        {% elif not donor.is_approved %}
+                        <span style="color: orange;">PENDING</span>
+                        {% else %}
+                        <span style="color: green;">ACTIVE</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="{{ url_for('admin_donor_profile', donor_id=donor.id) }}" class="btn btn-primary btn-sm" title="View Profile"><i class="fas fa-eye"></i></a>
+                            
+                            {% if donor.is_locked %}
+                            <a href="{{ url_for('block_user', user_id=donor.id, action='unblock') }}"
+                                class="btn btn-success btn-sm" title="Unblock"><i class="fas fa-unlock"></i></a>
+                            {% else %}
+                            <a href="{{ url_for('block_user', user_id=donor.id, action='block') }}"
+                                class="btn btn-danger btn-sm" title="Block"><i class="fas fa-ban"></i></a>
+                            {% endif %}
+
+                            <button onclick="openResetModal('{{ donor.id }}', '{{ donor.full_name }}')"
+                                class="btn btn-primary btn-sm" title="Reset Password"><i
+                                    class="fas fa-key"></i></button>
+                            <a href="{{ url_for('delete_user', user_id=donor.id) }}"
+                                onclick="return confirm('Delete permanent?')" class="btn btn-danger btn-sm"
+                                title="Delete"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div id="resetModal"
+    style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background: var(--card-bg); padding: 2rem; border-radius: 10px; width: 300px;">
+        <h3>Reset Password</h3>
+        <p>For: <b id="modalUser"></b></p>
+        <form id="resetForm" method="POST">
+            <input type="password" name="new_password" placeholder="New Password" required
+                style="width: 100%; padding: 0.5rem; margin: 1rem 0;">
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Reset</button>
+                <button type="button" onclick="closeModal()" class="btn btn-danger">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openResetModal(id, name) {
+        document.getElementById('resetModal').style.display = 'flex';
+        document.getElementById('modalUser').innerText = name;
+        document.getElementById('resetForm').action = "/admin/reset-password/" + id;
+    }
+    function closeModal() {
+        document.getElementById('resetModal').style.display = 'none';
+    }
+
+    // Simple Search
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#donorTable tbody tr');
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

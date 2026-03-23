@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="color: var(--secondary);">My Profile</h2>
+
+    <div class="card">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div
+                style="width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">
+                {{ user.full_name[0] }}
+            </div>
+            <div>
+                <h3>{{ user.full_name }}</h3>
+                <p style="color: #666; margin-bottom: 2px;">{{ user.mobile_number }}</p>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                    <span style="background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
+                        ⭐ Trust Score: {{ user.reputation_score }}
+                    </span>
+                    <button onclick="showQRCode()" class="btn" style="font-size: 0.7rem; padding: 1px 6px;">Digital ID 🆔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Modal -->
+        <div id="qrModal"
+            style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+            <div
+                style="background:white; margin: 15% auto; padding:2rem; width:300px; text-align:center; border-radius:10px;">
+                <h3>Digital Donor ID</h3>
+                <div id="qrcode" style="margin: 1rem auto; display: flex; justify-content: center;"></div>
+                <p><strong>{{ user.full_name }}</strong></p>
+                <p>Blood Group: {{ user.blood_group }}</p>
+                <button onclick="document.getElementById('qrModal').style.display='none'" class="btn"
+                    style="margin-top:1rem; background: #666;">Close</button>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script>
+            function showQRCode() {
+                document.getElementById('qrModal').style.display = 'block';
+                document.getElementById('qrcode').innerHTML = ""; // Clear previous
+                new QRCode(document.getElementById("qrcode"), {
+                    text: "LIFELINK-{{ user.id }}-{{ user.blood_group }}",
+                    width: 128,
+                    height: 128
+                });
+            }
+        </script>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+                <strong>Blood Group</strong>
+                <p>{{ user.blood_group }} ({{ user.gender }})</p>
+            </div>
+            <div>
+                <strong>Vitals</strong>
+                <p style="font-size: 0.85rem;">W: {{ user.weight }}kg | HB: {{ user.hemoglobin }}</p>
+            </div>
+            <div>
+                <strong>Blood Pressure</strong>
+                <p style="font-size: 0.85rem;">{{ user.systolic_bp }}/{{ user.diastolic_bp }} mmHg</p>
+            </div>
+            <div>
+                <strong>Status</strong>
+                <p class="{{ 'text-success' if user.is_available else 'text-danger' }}" style="font-weight: bold;">
+                    {{ 'Eligible ✅' if user.is_available else 'Ineligible ⚠️' }}
+                </p>
+            </div>
+        </div>
+
+        <h4 style="margin-bottom: 0.5rem;">Health Info</h4>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <span class="badge {{ 'bg-danger' if user.smoking else 'bg-light' }}" style="padding: 5px 10px; border-radius: 15px; font-size: 0.8rem;">Smoking</span>
+            <span class="badge {{ 'bg-danger' if user.drinking else 'bg-light' }}" style="padding: 5px 10px; border-radius: 15px; font-size: 0.8rem;">Drinking</span>
+            <span class="badge {{ 'bg-danger' if user.bp else 'bg-light' }}" style="padding: 5px 10px; border-radius: 15px; font-size: 0.8rem;">BP</span>
+            <span class="badge {{ 'bg-danger' if user.sugar else 'bg-light' }}" style="padding: 5px 10px; border-radius: 15px; font-size: 0.8rem;">Sugar</span>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <a href="{{ url_for('edit_profile') }}" class="btn">Edit Profile</a>
+            <a href="{{ url_for('change_password') }}" class="btn" style="background: #666;">Change Password</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

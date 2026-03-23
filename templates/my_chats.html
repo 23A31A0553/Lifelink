@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="color: var(--secondary); margin-bottom: 2rem;">My Conversations</h2>
+
+    {% if chats %}
+    <div class="card" style="padding: 0;">
+        {% for chat in chats %}
+        <a href="{{ url_for('chat', partner_id=chat.user.id) }}"
+            style="text-decoration: none; color: inherit; display: block;">
+            <div style="
+                padding: 1rem; 
+                border-bottom: 1px solid #eee; 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                background: {{ '#e6f7ff' if chat.unread > 0 else 'white' }};">
+
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="
+                        width: 40px; height: 40px; 
+                        background: var(--primary); 
+                        color: white; 
+                        border-radius: 50%; 
+                        display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                        {{ chat.user.full_name[0].upper() }}
+                    </div>
+                    <div>
+                        <h4 style="margin: 0;">{{ chat.user.full_name }}</h4>
+                        <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                            {{ chat.last_msg.message[:30] }}{{ '...' if chat.last_msg.message|length > 30 }}
+                        </p>
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <p style="font-size: 0.8rem; color: #999; margin: 0;">
+                        {{ chat.last_msg.timestamp.strftime('%b %d') }}
+                    </p>
+                    {% if chat.unread > 0 %}
+                    <span style="
+                        background: var(--secondary); 
+                        color: white; 
+                        padding: 2px 8px; 
+                        border-radius: 10px; 
+                        font-size: 0.8rem;
+                        display: inline-block;
+                        margin-top: 5px;">
+                        {{ chat.unread }} new
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center">
+        <h3>No conversations yet.</h3>
+        <p>Start a chat with a donor from the <a href="{{ url_for('dashboard') }}">dashboard</a>.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

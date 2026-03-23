@@ -1,0 +1,61 @@
+{% extends 'admin/base.html' %}
+{% block title %}Communication Center{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h3>Broadcast Message</h3>
+        <p>Send a message to all registered donors.</p>
+
+        <form action="{{ url_for('send_broadcast') }}" method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label>Channel</label>
+                <select name="channel" style="width: 100%; padding: 0.5rem;">
+                    <option value="Dashboard">Dashboard Notification (Alert)</option>
+                    <option value="SMS">SMS (Simulated)</option>
+                    <option value="WhatsApp">WhatsApp (Simulated)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Target Blood Group</label>
+                <select name="blood_group" style="width: 100%; padding: 0.5rem;">
+                    <option value="All">All Blood Groups</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+                <small style="color: #666;"><i class="fas fa-info-circle"></i> Smart targeting matches specific requests</small>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <label>Target City/Location (Optional)</label>
+                <input type="text" name="city" placeholder="e.g. New York" style="width: 100%; padding: 0.5rem;">
+                <small class="text-muted">Leave blank for all registered cities</small>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Message Content</label>
+                <textarea name="message" rows="4" required placeholder="Type your critical alert here..."
+                    style="width: 100%; padding: 0.5rem;"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-danger">Detailed Broadcast</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Communication History</h3>
+        <p>Check "Audit Logs" for full history of sent messages.</p>
+        <div style="background: #eee; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+            <p><strong>SMS API Status:</strong> <span style="color: green;">Online (Mock)</span></p>
+            <p><strong>WhatsApp API Status:</strong> <span style="color: green;">Online (Mock)</span></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

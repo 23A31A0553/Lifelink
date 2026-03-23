@@ -1,0 +1,63 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Smart Donor Match: {{ req.blood_group }}</h2>
+    <a href="{{ url_for('hospital_requisition') }}" class="btn" style="background: #666;">&larr; Back to Requests</a>
+</div>
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <h4>Requisition Info</h4>
+    <p><strong>Patient:</strong> {{ req.patient_name }} | <strong>Urgency:</strong> <span class="urgency-{{ req.urgency_level|lower }}" style="font-weight: bold;">{{ req.urgency_level }}</span></p>
+</div>
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h3>AI Recommended Candidates</h3>
+    {% if donors %}
+    <div style="overflow-x: auto; margin-top: 1rem;">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; text-align: left;">
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Rank</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Donor Name</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Contact</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Distance (km)</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Reputation</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">AI Matched Score</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in donors %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px; font-weight: bold;" class="rank-{{ loop.index if loop.index <= 3 else 'other' }}">
+                        #{{ loop.index }}
+                    </td>
+                    <td style="padding: 12px;">{{ d.donor.full_name }}</td>
+                    <td style="padding: 12px;">{{ d.donor.mobile_number }}</td>
+                    <td style="padding: 12px;">{{ d.distance }}</td>
+                    <td style="padding: 12px;">
+                        <span class="badge-base badge-{% if d.donor.reputation_score >= 80 %}high{% elif d.donor.reputation_score >= 50 %}med{% else %}low{% endif %}">
+                            {{ d.donor.reputation_score or 100 }}/100
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="background: #eee; border-radius: 10px; width: 100px; height: 10px; overflow: hidden; display: inline-block; margin-right: 5px;">
+                            <div style="background: #4caf50; height: 100%; width: {{ [d.score, 100]|min }}%;"></div>
+                        </div>
+                        <small>{{ d.score }}</small>
+                    </td>
+                    <td style="padding: 12px;">
+                        <form method="POST" action="{{ url_for('hospital_assign_donor', req_id=req.id, donor_id=d.donor.id) }}">
+                            <button type="submit" class="btn" style="padding: 5px 15px; font-size: 0.9em; background: #1976d2;">Assign Donor</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 1rem; text-align: center; padding: 2rem;">No eligible donors found. Broaden search or check later.</p>
+    {% endif %}
+</div>
+{% endblock %}

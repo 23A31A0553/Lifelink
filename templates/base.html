@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLink - Smart Blood Donation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            color: var(--primary);
+        }
+    </style>
+    <script>
+        // Check local storage immediately to prevent flash
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+</head>
+
+<body
+    style="background-color: var(--background); color: var(--text); opacity: 1 !important; visibility: visible !important;">
+
+
+    <nav>
+        <a href="/" class="logo">🩸 LifeLink</a>
+        <div class="nav-links">
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
+
+            <a href="{{ url_for('home') }}">{{ _('home') }}</a>
+            {% if current_user.is_authenticated %}
+            <!-- Notifications (Donors only) -->
+            {% if current_user.__tablename__ == 'users' %}
+            <div style="position: relative; margin-right: 15px; margin-top: 5px; cursor: pointer; display: inline-block;" onclick="document.getElementById('notifDropdown').style.display = document.getElementById('notifDropdown').style.display === 'none' ? 'block' : 'none';">
+                <i class="fas fa-bell" style="font-size: 1.2rem; color: var(--secondary);"></i>
+                <span id="notifBadge" style="position: absolute; top: -5px; right: -10px; background: red; color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.7rem; display: none;">0</span>
+                
+                <div id="notifDropdown" style="display: none; position: absolute; right: -50px; top: 35px; background: var(--surface); width: 320px; max-height: 400px; overflow-y: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; padding: 1rem; border: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <h4 style="margin: 0; color: var(--primary);">Notifications</h4>
+                        <button onclick="clearNotifications(event)" style="background: none; border: none; color: #888; cursor: pointer; font-size: 0.8rem;">Clear All</button>
+                    </div>
+                    <div id="notifList">Loading...</div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    fetch('/api/notifications')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.count > 0) {
+                                document.getElementById('notifBadge').innerText = data.count;
+                                document.getElementById('notifBadge').style.display = 'block';
+                            }
+                            if (data.notifications.length > 0) {
+                                document.getElementById('notifList').innerHTML = data.notifications.map(n => `<div style="padding: 10px; border-bottom: 1px solid #f5f5f5; font-size: 0.9em; ${n.is_read ? 'opacity: 0.7;' : 'font-weight: 600; background: #fafafa;'}">${n.message} <br><small style="color: #999;">${n.date}</small></div>`).join('');
+                            } else {
+                                document.getElementById('notifList').innerHTML = '<p style="color: #888; text-align: center; padding: 1rem 0;">No new notifications</p>';
+                            }
+                        }).catch(e => console.error(e));
+                });
+
+                function clearNotifications(e) {
+                    e.stopPropagation();
+                    fetch('/api/notifications/clear', {method: 'POST'})
+                        .then(() => {
+                            document.getElementById('notifBadge').style.display = 'none';
+                            document.getElementById('notifList').innerHTML = '<p style="color: #888; text-align: center; padding: 1rem 0;">No active notifications</p>';
+                        });
+                }
+            </script>
+            {% endif %}
+            
+            {% if current_user.__tablename__ == 'admins' %}
+            <a href="{{ url_for('admin_dashboard') }}">{{ _('admin_dashboard') }}</a>
+            {% elif current_user.__tablename__ == 'hospitals' %}
+            <a href="/hospital/dashboard">{{ _('hospital_dashboard') }}</a>
+            {% else %}
+            <a href="{{ url_for('dashboard') }}">{{ _('dashboard') }}</a>
+            <a href="{{ url_for('profile') }}">{{ _('profile') }}</a>
+            <a href="{{ url_for('request_blood') }}" class="btn">{{ _('request_blood') }}</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">{{ _('logout') }}</a>
+            {% else %}
+            <div class="nav-dropdown">
+                <span class="nav-dropbtn">Login <i class="fas fa-chevron-down" style="font-size: 0.7rem; margin-left: 3px;"></i></span>
+                <div class="nav-dropdown-content">
+                    <a href="{{ url_for('login') }}"><i class="fas fa-user-circle" style="margin-right: 5px;"></i> User Login</a>
+                    <a href="{{ url_for('hospital_login') }}"><i class="fas fa-clinic-medical" style="margin-right: 5px;"></i> Hospital Login</a>
+                    <a href="{{ url_for('admin_login') }}"><i class="fas fa-user-shield" style="margin-right: 5px;"></i> Admin Login</a>
+                </div>
+            </div>
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-glow" style="margin-left: 10px;">{{ _('register') }}</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="page-fade-in">
+        <div id="toast-container"></div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                {% for category, message in messages %}
+                showToast("{{ message|safe }}", "{{ 'success' if category == 'success' else 'error' }}");
+                {% endfor %}
+            });
+        </script>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Simulation of "Emergency Alert" received from Admin -->
+        {% if session.get('emergency_alert') %}
+        <div
+            style="background: red; color: white; padding: 1rem; text-align: center; margin-bottom: 1rem; font-weight: bold; animation: pulse 2s infinite;">
+            🚨 EMERGENCY ALERT: {{ session.get('emergency_alert') }}
+            <a href="{{ url_for('clear_alert') }}"
+                style="color: white; border: 1px solid white; padding: 2px 5px; margin-left: 10px; text-decoration: none;">Dismiss</a>
+        </div>
+        <style>
+            @keyframes pulse {
+                0% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.8;
+                }
+
+                100% {
+                    opacity: 1;
+                }
+            }
+        </style>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Devashish. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Icon matching
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        function toggleVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            // Determine icon color via CSS mapping or inline
+            let iconColor = type === 'success' ? 'var(--accent)' : '#e74c3c';
+            
+            toast.innerHTML = `<i class="fas ${icon}" style="font-size: 1.2rem; margin-top: 2px; color: ${iconColor};"></i> <span style="flex: 1;">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+    </script>
+</body>
+
+</html>

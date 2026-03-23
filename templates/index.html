@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="text-align: center; padding: 5rem 1rem; position: relative;">
+    <h1 style="font-size: 3.5rem; color: var(--text); font-weight: 800; margin-bottom: 1.5rem; line-height: 1.2; letter-spacing: -1px;">
+        Find Blood in Seconds.<br>
+        <span style="color: var(--primary);">Save Lives Instantly.</span>
+    </h1>
+    <p style="font-size: 1.2rem; color: #777; max-width: 650px; margin: 0 auto 3rem;">
+        Join our growing network of heroes. Whether you need blood urgently or want to give the gift of life, LifeLink connects you directly with safe, verified sources.
+    </p>
+
+    <!-- Fixed CTA Hierarchy -->
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+        <a href="{{ url_for('request_blood') }}" class="btn btn-primary btn-glow"
+            style="padding: 1rem 2.5rem; font-size: 1.2rem; transform-origin: center;">
+            <i class="fas fa-search" style="margin-right: 8px;"></i> Find Blood Now
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-secondary hover-lift" 
+            style="padding: 1rem 2.5rem; font-size: 1.2rem;">
+            <i class="fas fa-heartbeat" style="margin-right: 8px;"></i> Become a Donor
+        </a>
+        <a href="{{ url_for('live_map') }}" class="btn btn-outline hover-lift"
+            style="padding: 1rem 2.5rem; font-size: 1.2rem; background: var(--surface);">
+            <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i> Live Map
+        </a>
+    </div>
+</div>
+
+<!-- Trust Factors -->
+<div style="text-align: center; padding: 2.5rem 1rem; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); background: var(--surface); margin-bottom: 5rem; border-radius: var(--radius); box-shadow: var(--shadow);">
+    <p style="text-transform: uppercase; letter-spacing: 2px; font-weight: 700; color: #888; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        Trusted by 100+ Hospitals & Thousands of Donors
+    </p>
+    <div style="display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; color: var(--secondary); font-size: 1.1rem; font-weight: 600;">
+        <span><i class="fas fa-check-circle" style="color: var(--primary); margin-right: 8px; font-size: 1.3rem;"></i> Verified Donors</span>
+        <span><i class="fas fa-lock" style="color: var(--primary); margin-right: 8px; font-size: 1.3rem;"></i> Secure Matching</span>
+        <span><i class="fas fa-bolt" style="color: var(--primary); margin-right: 8px; font-size: 1.3rem;"></i> Instant Alerts</span>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="stats-grid">
+    <div class="stat-card hover-lift">
+        <i class="fas fa-heart" style="color: var(--primary);"></i>
+        <h2>1,200+</h2>
+        <p style="color: #666; font-weight: 500;">Lives Saved</p>
+    </div>
+    <div class="stat-card hover-lift">
+        <i class="fas fa-users" style="color: var(--accent);"></i>
+        <h2>5,400+</h2>
+        <p style="color: #666; font-weight: 500;">Active Donors</p>
+    </div>
+    <div class="stat-card hover-lift">
+        <i class="fas fa-hospital" style="color: #17a2b8;"></i>
+        <h2>120+</h2>
+        <p style="color: #666; font-weight: 500;">Partner Hospitals</p>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div style="margin: 6rem 0;">
+    <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 4rem; color: var(--secondary); font-weight: 700;">How LifeLink Works</h2>
+    <div class="steps-grid">
+        <div class="step-card hover-lift">
+            <div class="step-icon">1</div>
+            <h3 style="margin-bottom: 1rem; color: var(--secondary);">Request Blood</h3>
+            <p style="color: #666; line-height: 1.8;">Submit your requirement with urgency level and location. Our system jumps into action immediately.</p>
+        </div>
+        <div class="step-card hover-lift">
+            <div class="step-icon">2</div>
+            <h3 style="margin-bottom: 1rem; color: var(--secondary);">Get Matched</h3>
+            <p style="color: #666; line-height: 1.8;">Our smart algorithm finds the nearest eligible donors and sends them instant alerts.</p>
+        </div>
+        <div class="step-card hover-lift">
+            <div class="step-icon">3</div>
+            <h3 style="margin-bottom: 1rem; color: var(--secondary);">Save a Life</h3>
+            <p style="color: #666; line-height: 1.8;">Connect with the donor or hospital directly and fulfill the critical requirement safely.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Cards (Existing Content Enhanced) -->
+<h2 style="text-align: center; font-size: 2.5rem; margin: 6rem 0 4rem; color: var(--secondary); font-weight: 700;">Why Choose Us</h2>
+<div class="grid" style="margin-bottom: 6rem;">
+    <div class="card text-center hover-lift animate-pulse-border" style="border-width: 2px;">
+        <i class="fas fa-ambulance" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+        <h3 style="color: var(--primary);">{{ _('emergency_req') }}</h3>
+        <p style="line-height: 1.8; color: #666;">{{ _('emergency_desc') }}</p>
+    </div>
+    <div class="card text-center hover-lift">
+        <i class="fas fa-map-marked-alt" style="font-size: 3.5rem; color: var(--secondary); margin-bottom: 1.5rem;"></i>
+        <h3>{{ _('smart_loc') }}</h3>
+        <p style="line-height: 1.8; color: #666;">{{ _('smart_loc_desc') }}</p>
+    </div>
+    <div class="card text-center hover-lift">
+        <i class="fas fa-user-shield" style="font-size: 3.5rem; color: var(--secondary); margin-bottom: 1.5rem;"></i>
+        <h3>{{ _('safety_first') }}</h3>
+        <p style="line-height: 1.8; color: #666;">{{ _('safety_desc') }}</p>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div style="margin: 6rem 0; background: var(--surface); border-radius: var(--radius); padding: 5rem 2rem; box-shadow: var(--shadow); border: 1px solid var(--border-color);">
+    <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 4rem; color: var(--secondary); font-weight: 700;">What Our Users Say</h2>
+    <div class="testimonials-grid">
+        <div class="testimonial-card hover-lift">
+            <i class="fas fa-quote-left"></i>
+            <p style="font-style: italic; color: #555; margin-bottom: 1.5rem; line-height: 1.8; position: relative; z-index: 1;">
+                "LifeLink found a rare blood type donor for my father's surgery within 15 minutes. The interface is incredibly fast and saved his life."
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--background); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--secondary); border: 2px solid var(--border-color);">AK</div>
+                <div>
+                    <h4 style="margin: 0; color: var(--secondary);">Arjun Kumar</h4>
+                    <span style="font-size: 0.85rem; color: #888;">Family Member</span>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card hover-lift">
+            <i class="fas fa-quote-left"></i>
+            <p style="font-style: italic; color: #555; margin-bottom: 1.5rem; line-height: 1.8; position: relative; z-index: 1;">
+                "As a hospital admin, the streamlined request system means we spend less time calling and more time treating patients. It's a game changer."
+            </p>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">DS</div>
+                <div>
+                    <h4 style="margin: 0; color: var(--secondary);">Dr. Sharma</h4>
+                    <span style="font-size: 0.85rem; color: #888;">GSL General Hospital</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Map Preview Area -->
+<div class="hover-lift" style="margin-bottom: 3rem; text-align: center; padding: 5rem 2rem; background: linear-gradient(rgba(43, 45, 66, 0.85), rgba(43, 45, 66, 0.95)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover; border-radius: var(--radius); color: white; box-shadow: var(--shadow);">
+    <h2 style="font-size: 2.5rem; margin-bottom: 1rem; color: white; font-weight: 800;">Real-Time Donor Network</h2>
+    <p style="max-width: 600px; margin: 0 auto 3rem; color: #ddd; font-size: 1.2rem;">See active donors and critical shortage areas live on our interactive map.</p>
+    <a href="{{ url_for('live_map') }}" class="btn btn-primary btn-glow" style="padding: 1.2rem 3rem; font-size: 1.2rem;">
+        <i class="fas fa-map-marked-alt" style="margin-right: 8px;"></i> Open Live Map
+    </a>
+</div>
+
+<!-- Developer / Project Creator Section -->
+<div class="hover-lift" style="margin: 6rem auto 2rem; max-width: 900px; padding: 4rem 2rem; background: rgba(30, 30, 40, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: var(--radius); border: 1px solid rgba(255, 75, 75, 0.15); box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 0 40px rgba(255, 59, 48, 0.08); text-align: center; position: relative; overflow: hidden; transition: all 0.4s ease;">
+    
+    <!-- Subtle top red glow -->
+    <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 70%; height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.8; filter: blur(1px);"></div>
+    
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">
+        <i class="fas fa-laptop-code" style="color: var(--primary); margin-right: 8px;"></i> Developed By
+    </h2>
+    
+    <h3 style="font-size: 2.8rem; background: linear-gradient(135deg, var(--primary), #ffa07a); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 1rem 0; font-weight: 800; letter-spacing: 1px;">
+        Penugonda Devashish
+    </h3>
+    
+    <p style="font-size: 1.25rem; color: #ddd; font-style: italic; margin-bottom: 3rem; font-weight: 500;">
+        "Built to save lives through smart blood donation <span style="color: var(--primary);">❤️</span>"
+    </p>
+    
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; font-size: 1.05rem; color: #ddd;">
+        <div class="contact-badge" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); transition: background 0.3s ease, border-color 0.3s ease;">
+            <i class="fas fa-envelope" style="color: var(--primary); font-size: 1.2rem;"></i> 
+            <a href="mailto:devashish8275@gmail.com" style="color: #ddd; text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--primary)'; this.parentNode.style.borderColor='rgba(255, 75, 75, 0.4)'" onmouseout="this.style.color='#ddd'; this.parentNode.style.borderColor='rgba(255,255,255,0.05)'">devashish8275@gmail.com</a>
+        </div>
+        
+        <div class="contact-badge" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); transition: background 0.3s ease, border-color 0.3s ease;">
+            <i class="fas fa-phone-alt" style="color: var(--primary); font-size: 1.2rem;"></i> 
+            <a href="tel:9177275151" style="color: #ddd; text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--primary)'; this.parentNode.style.borderColor='rgba(255, 75, 75, 0.4)'" onmouseout="this.style.color='#ddd'; this.parentNode.style.borderColor='rgba(255,255,255,0.05)'">+91 9177275151</a>
+        </div>
+        
+        <div class="contact-badge" style="display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); transition: background 0.3s ease, border-color 0.3s ease;" onmouseover="this.style.borderColor='rgba(255, 75, 75, 0.4)'; this.querySelector('span').style.color='var(--primary)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.05)'; this.querySelector('span').style.color='#ddd'">
+            <i class="fas fa-graduation-cap" style="color: var(--primary); font-size: 1.2rem;"></i> 
+            <span style="transition: color 0.3s ease;">Pragati Engineering College</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

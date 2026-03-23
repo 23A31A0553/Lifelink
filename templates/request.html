@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="text-center" style="margin-bottom: 1.5rem; color: #d00000;">Request Blood</h2>
+    <p class="text-center" style="margin-bottom: 1rem; color: #666;">Find compatible donors near you instantly.</p>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Patient Name</label>
+            <input type="text" name="patient_name" required>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Blood Group Needed</label>
+                <select name="blood_group" required>
+                    <option value="">Select</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Urgency Level</label>
+                <select name="urgency_level">
+                    <option value="Medium">Medium</option>
+                    <option value="High" style="color: red; font-weight: bold;">🚨 Critical / High</option>
+                    <option value="Low">Low (Planned)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Hospital Name</label>
+            <input type="text" name="hospital_name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Hospital Location / Area</label>
+            <input type="text" name="hospital_location" placeholder="e.g. Apollo Hospital, City Center" required>
+        </div>
+
+        <!-- Hidden Geo Fields -->
+        <input type="hidden" id="req_lat" name="req_latitude" value="0.0">
+        <input type="hidden" id="req_lon" name="req_longitude" value="0.0">
+
+        <div style="background: #f9f9f9; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+            <label style="display: flex; align-items: center; justify-content: space-between;">
+                Location for Matching
+                <button type="button" onclick="getLocation()" class="btn btn-secondary"
+                    style="font-size: 0.8rem; padding: 4px 10px;">📍 Detect</button>
+            </label>
+            <small id="loc-status" style="display: block; margin-top: 5px; color: #666;">Distance calculation requires
+                location.</small>
+        </div>
+
+        <div class="form-group">
+            <label>Contact Number (Verified)</label>
+            <input type="tel" name="contact_number" value="{{ current_user.mobile_number }}" readonly required>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; background: #d00000;">Find Donors</button>
+    </form>
+</div>
+
+<script>
+    function getLocation() {
+        status = document.getElementById('loc-status');
+        if (navigator.geolocation) {
+            status.innerHTML = "Locating...";
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            status.innerHTML = "Geolocation is not supported.";
+        }
+    }
+
+    function showPosition(position) {
+        document.getElementById('req_lat').value = position.coords.latitude;
+        document.getElementById('req_lon').value = position.coords.longitude;
+        document.getElementById('loc-status').innerHTML = "✅ Location Locked!";
+        document.getElementById('loc-status').style.color = "green";
+    }
+
+    function showError(error) {
+        document.getElementById('loc-status').innerHTML = "⚠️ Allow Location Access for better accuracy.";
+    }
+    window.onload = getLocation;
+</script>
+{% endblock %}

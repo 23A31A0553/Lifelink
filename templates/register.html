@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container" style="max-width: 800px; margin: 0 auto; padding: 2rem 1rem;">
+    <!-- Emotional Hook -->
+    <div style="text-align: center; margin-bottom: 2.5rem; padding: 1.5rem; background: rgba(255, 51, 102, 0.05); border-radius: var(--radius); border: 1px solid rgba(255, 51, 102, 0.1);">
+        <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 0.5rem;">
+            Your donation can save up to 3 lives ❤️
+        </h2>
+        <p style="color: #666; font-size: 1.1rem; margin-bottom: 0;">Join thousands of others in the most vital life-saving network.</p>
+    </div>
+
+    {% if error %}
+    <div style="background: #ffe3e3; color: #d00000; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #d00000;">
+        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Stepper -->
+    <div class="stepper" id="stepper">
+        <div class="step-item active" id="step-marker-1">1<span class="step-label">Personal Info</span></div>
+        <div class="step-item" id="step-marker-2">2<span class="step-label">Health Details</span></div>
+        <div class="step-item" id="step-marker-3">3<span class="step-label">Location</span></div>
+    </div>
+
+    <form method="POST" action="{{ url_for('register') }}" id="registrationForm">
+        
+        <!-- STEP 1: Personal Info -->
+        <div class="form-step active card-section" id="step-1">
+            <h3><i class="fas fa-user" style="color: var(--primary); margin-right: 8px;"></i> Personal Information</h3>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Full Name <span style="color: var(--primary);">*</span></label>
+                <input type="text" name="full_name" class="input-highlight" placeholder="e.g. John Doe" required>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Mobile Number (Login ID) <span style="color: var(--primary);">*</span></label>
+                    <input type="tel" name="mobile_number" class="input-highlight" placeholder="10-digit number" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label>Gender <span style="color: var(--primary);">*</span></label>
+                    <select name="gender" class="input-highlight" required onchange="toggleFemaleFields(this.value)">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Email Address (For Notifications) <span style="color: var(--primary);">*</span></label>
+                <input type="email" name="email" class="input-highlight" placeholder="email@example.com" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Password <span style="color: var(--primary);">*</span></label>
+                <div style="position: relative;">
+                    <input type="password" name="password" id="reg_password" class="input-highlight" required
+                        style="width: 100%; padding-right: 45px;" placeholder="Create a secure password">
+                    <i class="fas fa-eye" id="toggleRegPassword"
+                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666;"
+                        onclick="toggleVisibility('reg_password', 'toggleRegPassword')"></i>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 2rem;">
+                <button type="button" class="btn btn-primary btn-glow hover-lift" onclick="nextStep(1)">Next Step <i class="fas fa-arrow-right" style="margin-left: 8px;"></i></button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Health Details -->
+        <div class="form-step card-section" id="step-2">
+            <h3><i class="fas fa-heartbeat" style="color: var(--primary); margin-right: 8px;"></i> Health Details</h3>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label style="font-weight: 700; color: var(--primary);">Blood Group <span style="color: var(--primary);">*</span></label>
+                    <select name="blood_group" class="input-highlight highlight-field" required>
+                        <option value="">Select your group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Age <span style="color: var(--primary);">*</span></label>
+                    <input type="number" name="age" class="input-highlight" min="18" max="65" placeholder="18-65" required>
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Weight (kg) <span style="color: var(--primary);">*</span></label>
+                    <input type="number" step="0.1" name="weight" class="input-highlight" placeholder="e.g. 65" required>
+                </div>
+                <div class="form-group">
+                    <label>Hemoglobin (g/dL) <span style="color: var(--primary);">*</span></label>
+                    <input type="number" step="0.1" name="hemoglobin" class="input-highlight" required placeholder="Normal: 12.5+">
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Sugar Level (mg/dL) <span style="color: var(--primary);">*</span></label>
+                    <input type="number" name="sugar_level" class="input-highlight" placeholder="e.g. 100" required>
+                </div>
+                <div class="form-group">
+                    <label>Pulse Rate <span style="color: var(--primary);">*</span></label>
+                    <input type="number" name="pulse_rate" class="input-highlight" required placeholder="Normal: 72">
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Systolic BP <span style="color: var(--primary);">*</span></label>
+                    <input type="number" name="systolic_bp" class="input-highlight" required placeholder="Normal: 120">
+                </div>
+                <div class="form-group">
+                    <label>Diastolic BP <span style="color: var(--primary);">*</span></label>
+                    <input type="number" name="diastolic_bp" class="input-highlight" required placeholder="Normal: 80">
+                </div>
+            </div>
+
+            <div id="femaleFields" style="display: none; background: #fff5f8; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ffccd5;">
+                <h4 style="color: #d81b60; margin-bottom: 1rem;">Female Specific Health Check</h4>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label><input type="checkbox" name="is_pregnant"> Pregnant</label>
+                    <label><input type="checkbox" name="is_breastfeeding"> Breastfeeding</label>
+                    <label><input type="checkbox" name="menstrual_safe" checked> Safe Menstrual Phase</label>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Last Donation Date</label>
+                <input type="date" name="last_donation_date" class="input-highlight">
+                <small style="color: #888; display: block; margin-top: 5px;">Leave empty if never donated.</small>
+            </div>
+
+            <h4 style="margin-bottom: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">Health & Habits</h4>
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 10px;">
+                    <label><input type="checkbox" name="bp"> BP Problem</label>
+                    <label><input type="checkbox" name="sugar"> Diabetes/Sugar</label>
+                    <label><input type="checkbox" name="heart_disease"> Heart Problem</label>
+                </div>
+                <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 10px;">
+                    <label><input type="checkbox" name="asthma"> Asthma</label>
+                    <label><input type="checkbox" name="smoking"> Smoker</label>
+                    <label><input type="checkbox" name="drinking"> Drink Alcohol</label>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 2.5rem;">
+                <button type="button" class="btn btn-secondary hover-lift" onclick="prevStep(2)"><i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back</button>
+                <button type="button" class="btn btn-primary btn-glow hover-lift" onclick="nextStep(2)">Next Step <i class="fas fa-arrow-right" style="margin-left: 8px;"></i></button>
+            </div>
+        </div>
+
+        <!-- STEP 3: Location & Consent -->
+        <div class="form-step card-section" id="step-3">
+            <h3><i class="fas fa-map-marker-alt" style="color: var(--primary); margin-right: 8px;"></i> Location Details</h3>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 700;">City <span style="color: var(--primary);">*</span></label>
+                <input type="text" name="city" class="input-highlight highlight-field" placeholder="e.g. Mumbai" required>
+            </div>
+
+            <!-- Hidden Geo Fields -->
+            <input type="hidden" id="lat" name="latitude" value="0.0">
+            <input type="hidden" id="lon" name="longitude" value="0.0">
+            
+            <div class="hover-lift" style="background: var(--background); padding: 1.5rem; border-radius: 8px; text-align: center; margin-bottom: 2rem; border: 1px dashed var(--primary); transition-duration: 0.3s;">
+                <button type="button" onclick="getLocation()" class="btn btn-outline" style="font-size: 1rem; margin-bottom: 10px; background: var(--surface);">
+                    <i class="fas fa-map-pin" style="margin-right: 8px; color: var(--primary);"></i> Detect My Exact Location
+                </button>
+                <div id="loc-status" style="font-weight: 600; color: var(--secondary); margin-top: 5px;">Location required for smart matching</div>
+            </div>
+
+            <div class="hover-lift" style="background: rgba(255, 51, 102, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255, 51, 102, 0.1); margin-bottom: 2rem; transition-duration: 0.3s;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" name="gdpr_consent" required style="margin-top: 4px; width: 20px; height: 20px; cursor: pointer;">
+                    <span style="font-size: 0.95rem; line-height: 1.5; color: var(--secondary);">I agree to the <a href="{{ url_for('privacy_policy') }}" target="_blank" style="color: var(--primary); font-weight: bold;">Privacy Policy</a> and explicitly consent to the encrypted storage of my vital medical data per highest security guidelines. <span style="color: var(--primary);">*</span></span>
+                </label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 2.5rem;">
+                <button type="button" class="btn btn-secondary hover-lift" onclick="prevStep(3)"><i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Back</button>
+                <button type="submit" class="btn btn-primary btn-glow hover-lift" style="padding: 1rem 2.5rem; font-size: 1.2rem;">Complete <i class="fas fa-check" style="margin-left: 8px;"></i></button>
+            </div>
+        </div>
+
+        <p class="text-center mt-2" style="margin-top: 2.5rem; color: #666;">
+            Already registered? <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 600;">Login here</a>
+        </p>
+    </form>
+</div>
+
+<script>
+    function toggleFemaleFields(gender) {
+        document.getElementById('femaleFields').style.display = (gender === 'Female') ? 'block' : 'none';
+    }
+
+    function getLocation() {
+        var status = document.getElementById('loc-status');
+        if (navigator.geolocation) {
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            status.innerHTML = "⚠️ Geolocation is not supported by this browser.";
+        }
+    }
+
+    function showPosition(position) {
+        document.getElementById('lat').value = position.coords.latitude;
+        document.getElementById('lon').value = position.coords.longitude;
+        document.getElementById('loc-status').innerHTML = "✅ Location Locked Successfully!";
+        document.getElementById('loc-status').style.color = "var(--accent)";
+    }
+
+    function showError(error) {
+        document.getElementById('loc-status').innerHTML = "⚠️ Please Allow Location Access";
+        document.getElementById('loc-status').style.color = "red";
+    }
+
+    function nextStep(current) {
+        const currentStepEl = document.getElementById('step-' + current);
+        const inputs = currentStepEl.querySelectorAll('input[required], select[required]');
+        let valid = true;
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                input.reportValidity();
+                valid = false;
+            }
+        });
+
+        if (valid) {
+            document.getElementById('step-' + current).classList.remove('active');
+            document.getElementById('step-' + (current + 1)).classList.add('active');
+            
+            let marker = document.getElementById('step-marker-' + current);
+            marker.classList.add('completed');
+            marker.innerHTML = '<i class="fas fa-check"></i><span class="step-label">' + marker.querySelector('.step-label').innerText + '</span>';
+            document.getElementById('step-marker-' + (current + 1)).classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function prevStep(current) {
+        document.getElementById('step-' + current).classList.remove('active');
+        document.getElementById('step-' + (current - 1)).classList.add('active');
+        
+        let marker = document.getElementById('step-marker-' + current);
+        marker.classList.remove('active');
+        
+        let prevMarker = document.getElementById('step-marker-' + (current - 1));
+        prevMarker.classList.remove('completed');
+        prevMarker.innerHTML = (current - 1) + '<span class="step-label">' + prevMarker.querySelector('.step-label').innerText + '</span>';
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.onload = function() {
+        getLocation();
+    };
+</script>
+{% endblock %}

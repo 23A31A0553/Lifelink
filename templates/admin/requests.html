@@ -1,0 +1,93 @@
+{% extends 'admin/base.html' %}
+{% block title %}Blood Requests{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h3>Active Blood Requests</h3>
+    <table style="font-size: 0.9rem;">
+        <thead>
+            <tr>
+                <th>Patient / Contact</th>
+                <th>Group & Hospital</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>
+                    <b>{{ req.patient_name }}</b><br>
+                    <i class="fas fa-phone"></i> {{ req.contact_number }}
+                    {% if req.status == 'Fulfilled' and req.id in fulfillers %}
+                    <br><small style="color: var(--success);"><i class="fas fa-check-circle"></i> Fulfilled by: {{ fulfillers[req.id] }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <b style="color: #d00000;">{{ req.blood_group }}</b> @ {{ req.hospital_name }}<br>
+                    <small>{{ req.hospital_location }}</small>
+                </td>
+                <td>
+                    <span style="
+                        padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;
+                        background: {{ 'red' if req.urgency_level == 'High' else 'orange' }};
+                        color: white;">
+                        {{ req.urgency_level }}
+                    </span>
+                </td>
+                <td>
+                    <form action="{{ url_for('update_request', req_id=req.id) }}" method="POST" style="display:inline;">
+                        <select name="status" onchange="this.form.submit()"
+                            style="padding: 2px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="Pending" {% if req.status=='Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if req.status=='In Progress' %}selected{% endif %}>In
+                                Progress</option>
+                            <option value="Fulfilled" {% if req.status=='Fulfilled' %}selected{% endif %}>Fulfilled
+                            </option>
+                            <option value="Cancelled" {% if req.status=='Cancelled' %}selected{% endif %}>Cancelled
+                            </option>
+                        </select>
+                    </form>
+                </td>
+                <td>
+                    <button onclick="openAssignModal('{{ req.id }}')" class="btn btn-sm btn-primary">Assign
+                        Donor</button>
+                    <!-- <a href="https://www.google.com/maps?q={{ req.req_latitude }},{{ req.req_longitude }}" target="_blank" class="btn btn-sm btn-success"><i class="fas fa-map-marker-alt"></i></a> -->
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Assign Modal -->
+<div id="assignModal"
+    style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background: var(--card-bg); padding: 2rem; border-radius: 10px; width: 350px;">
+        <h3>Assign Donor</h3>
+        <p>Manually assign a donor to Request #<span id="assignReqId"></span></p>
+        <form id="assignForm" method="POST">
+            <select name="donor_id" required style="width: 100%; padding: 0.5rem; margin: 1rem 0;">
+                <option value="">-- Select Available Donor --</option>
+                {% for d in donors %}
+                <option value="{{ d.id }}">{{ d.full_name }} ({{ d.blood_group }}) - {{ d.city }}</option>
+                {% endfor %}
+            </select>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Assign</button>
+                <button type="button" onclick="document.getElementById('assignModal').style.display='none'"
+                    class="btn btn-danger">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAssignModal(id) {
+        document.getElementById('assignModal').style.display = 'flex';
+        document.getElementById('assignReqId').innerText = id;
+        document.getElementById('assignForm').action = "/admin/assign-donor/" + id;
+    }
+</script>
+{% endblock %}

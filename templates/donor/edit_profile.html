@@ -1,0 +1,112 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<div style="background: var(--surface); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-user-edit"></i> Edit Profile & Settings</h2>
+    
+    <form method="POST" action="{{ url_for('edit_profile') }}">
+        
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            
+            <!-- Core Info -->
+            <div style="flex: 1; min-width: 300px;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Personal Information</h4>
+                
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ user.full_name }}" required style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                
+                <label>Age</label>
+                <input type="number" name="age" value="{{ user.age }}" required min="18" max="65" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                
+                <label>Email Address</label>
+                <input type="email" name="email" value="{{ user.email or '' }}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+
+                <label>Blood Group</label>
+                <select name="blood_group" required style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                    <option value="{{ bg }}" {% if user.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+                    {% endfor %}
+                </select>
+                
+                <label>City/District</label>
+                <input type="text" name="city" value="{{ user.city }}" required style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+
+            <!-- Advanced Vitals & Location -->
+            <div style="flex: 1; min-width: 300px;">
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Clinical Dimensions</h4>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label>Weight (kg)</label>
+                        <input type="number" step="0.1" name="weight" value="{{ user.weight or '' }}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Hemoglobin (g/dL)</label>
+                        <input type="number" step="0.1" name="hemoglobin" value="{{ user.hemoglobin or '' }}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label>Systolic BP (mmHg)</label>
+                        <input type="number" name="systolic_bp" value="{{ user.systolic_bp or '' }}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Diastolic BP (mmHg)</label>
+                        <input type="number" name="diastolic_bp" value="{{ user.diastolic_bp or '' }}" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                </div>
+
+                <h4 style="color: var(--primary); margin-top: 1rem; margin-bottom: 1rem;">Location & Availability</h4>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label>Latitude</label>
+                        <input type="number" step="any" name="latitude" value="{{ user.latitude }}" required style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Longitude</label>
+                        <input type="number" step="any" name="longitude" value="{{ user.longitude }}" required style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div style="background: rgba(46, 204, 113, 0.1); padding: 1rem; border-radius: 5px; border: 1px solid rgba(46, 204, 113, 0.3);">
+                    <label style="display: flex; align-items: center; gap: 0.8rem; font-weight: bold; cursor: pointer;">
+                        <input type="checkbox" name="is_available" {% if user.is_available %}checked{% endif %} style="width: 20px; height: 20px;">
+                        I am currently Available for emergency donations
+                    </label>
+                </div>
+                <!-- Check if the user is technically blocked due to health or wait time -->
+            </div>
+            
+        </div>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border-color);">
+
+        <!-- Health Checklist -->
+        <h4 style="color: var(--primary); margin-bottom: 1rem;">Health & Habits Checklist</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <label style="cursor: pointer;"><input type="checkbox" name="smoking" {% if user.smoking %}checked{% endif %}> Do you smoke regularly?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="drinking" {% if user.drinking %}checked{% endif %}> Consume alcohol frequently?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="bp" {% if user.bp %}checked{% endif %}> History of High/Low BP?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="sugar" {% if user.sugar %}checked{% endif %}> History of Diabetes?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="heart_disease" {% if user.heart_disease %}checked{% endif %}> Heart Disease?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="asthma" {% if user.asthma %}checked{% endif %}> Asthma or breathing issues?</label>
+        </div>
+
+        {% if user.gender == 'Female' %}
+        <h4 style="color: #e91e63; margin-bottom: 1rem;">Female Health Checks</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; background: rgba(233, 30, 99, 0.05); padding: 1rem; border-radius: 5px;">
+            <label style="cursor: pointer;"><input type="checkbox" name="is_pregnant" {% if user.is_pregnant %}checked{% endif %}> Currently Pregnant?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="is_breastfeeding" {% if user.is_breastfeeding %}checked{% endif %}> Currently Breastfeeding?</label>
+            <label style="cursor: pointer;"><input type="checkbox" name="menstrual_safe" {% if user.menstrual_cycle_safe %}checked{% endif %}> Ready for cycle-safe donation?</label>
+        </div>
+        {% endif %}
+
+        <div style="text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem; font-weight: bold; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;"><i class="fas fa-save"></i> Save Profile Details</button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

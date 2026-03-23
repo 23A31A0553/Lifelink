@@ -1,0 +1,52 @@
+{% extends 'admin/base.html' %}
+{% block title %}AI Control Panel{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h3>Matching Algorithm Strategy</h3>
+        <p style="color: grey; margin-bottom: 1rem;">Adjust the weights used by the AI engine to rank donors.</p>
+
+        <form method="POST">
+            <div style="margin-bottom: 1.5rem;">
+                <label>Blood Group Compatibility (Weight: {{ config.weight_blood_group }}%)</label>
+                <input type="range" name="w_bg" min="0" max="100" value="{{ config.weight_blood_group }}"
+                    oninput="this.nextElementSibling.value = this.value + '%'" style="width: 100%;">
+                <output>{{ config.weight_blood_group }}%</output>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label>Distance Proximity (Weight: {{ config.weight_distance }}%)</label>
+                <input type="range" name="w_dist" min="0" max="100" value="{{ config.weight_distance }}"
+                    oninput="this.nextElementSibling.value = this.value + '%'" style="width: 100%;">
+                <output>{{ config.weight_distance }}%</output>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label>Recency / Rest Period (Weight: {{ config.weight_recency }}%)</label>
+                <input type="range" name="w_rec" min="0" max="100" value="{{ config.weight_recency }}"
+                    oninput="this.nextElementSibling.value = this.value + '%'" style="width: 100%;">
+                <output>{{ config.weight_recency }}%</output>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label>Health Score (Weight: {{ config.weight_health }}%)</label>
+                <input type="range" name="w_h" min="0" max="100" value="{{ config.weight_health }}"
+                    oninput="this.nextElementSibling.value = this.value + '%'" style="width: 100%;">
+                <output>{{ config.weight_health }}%</output>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Algorithm</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>About AI Engine</h3>
+        <ul>
+            <li><b>Blood Group:</b> Prioritizes exact matches and universal donors.</li>
+            <li><b>Distance:</b> Penalizes donors far away using Haversine formula.</li>
+            <li><b>Recency:</b> Prefers donors who have rested > 120 days.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="admin-login-bg" style="background: linear-gradient(135deg, rgba(20,20,30,0.9), rgba(43,45,66,0.95)), url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover; border-radius: var(--radius); min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; margin: 2rem 0; box-shadow: var(--shadow);">
+    <div class="glass-panel" style="border: 1px solid rgba(255, 51, 102, 0.3);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-user-shield" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="color: white; margin-bottom: 1.5rem;">Admin Portal</h2>
+        </div>
+
+        {% if error %}
+        <div style="background: rgba(220, 53, 69, 0.2); color: #ff6b6b; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff6b6b;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="color: #eee;">Username</label>
+                <input type="text" name="username" class="input-highlight" required style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+            </div>
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="color: #eee;">Password</label>
+                <div style="position: relative;">
+                    <input type="password" name="password" id="admin_password" class="input-highlight" required style="width: 100%; padding-right: 40px; background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <i class="fas fa-eye" id="toggleAdminPassword"
+                        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #ccc;"
+                        onclick="toggleVisibility('admin_password', 'toggleAdminPassword')"></i>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-glow hover-lift" style="width: 100%; padding: 1rem; font-size: 1.1rem;">Access Secure Panel</button>
+            
+            <p class="trust-copy" style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: #ccc; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-shield-alt" style="color: var(--primary);"></i> Secure admin access only. All actions are monitored and audited.
+            </p>
+
+            <p class="text-center" style="margin-top: 1.5rem;">
+                <a href="{{ url_for('login') }}" style="font-size: 0.9rem; color: #aaa; text-decoration: underline;">Back to User Login</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

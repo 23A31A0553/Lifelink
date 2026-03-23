@@ -1,0 +1,32 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h3>Blood Drives</h3>
+    {% if drives %}
+    <div style="overflow-x: auto; margin-top: 1rem;">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; text-align: left;">
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Date</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Title</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Location</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for drive in drives %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">{{ drive.date.strftime('%Y-%m-%d') }}</td>
+                    <td style="padding: 12px;"><b>{{ drive.title }}</b></td>
+                    <td style="padding: 12px;">{{ drive.location }}</td>
+                    <td style="padding: 12px;">{{ drive.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 1rem; text-align: center; padding: 2rem;">No active blood drives.</p>
+    {% endif %}
+</div>
+{% endblock %}

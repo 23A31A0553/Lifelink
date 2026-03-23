@@ -1,0 +1,193 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h2>Inventory Management</h2>
+    <form method="POST" action="{{ url_for('hospital_inventory') }}" style="display: flex; gap: 0.5rem; align-items: center;">
+        <select name="blood_group" required style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Blood Group</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+        <select name="component_type" required style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="Whole Blood">Whole Blood</option>
+            <option value="Plasma">Plasma</option>
+            <option value="Platelets">Platelets</option>
+        </select>
+        <input type="number" name="quantity" min="1" value="1" placeholder="Qty" required style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; width: 70px;">
+        <input type="date" name="donation_date" required title="Donation Date" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px;">
+        <input type="date" name="expiry_date" required title="Expiry Date" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px;">
+        <button type="submit" class="btn" style="padding: 0.5rem 1rem;">Add Stock</button>
+    </form>
+</div>
+
+{% if low_stock_alerts %}
+<div style="background: #fff3e0; color: #e65100; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; border-left: 5px solid #ff9800;">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Low Stock Alert!</strong> You have less than 3 bags of: <b>{{ ", ".join(low_stock_alerts) }}</b>
+</div>
+{% endif %}
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="margin: 0;">Current Stock Overview</h3>
+        <input type="text" id="inventorySearch" placeholder="Search by Group, Type, ID..." style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; width: 250px;">
+    </div>
+    {% if bags %}
+    <div style="overflow-x: auto; margin-top: 1rem;">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; text-align: left;">
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Bag ID</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Blood Group</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Component Type</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Qty (ml/units)</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Donated On</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Expires On</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Status</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bag in bags %}
+                <tr style="border-bottom: 1px solid #eee; {% if bag.days_to_expiry < 0 %}background: #ffebee;{% elif bag.days_to_expiry <= 7 %}background: #fff8e1;{% endif %}">
+                    <td style="padding: 12px;">#{{ bag.id }}</td>
+                    <td style="padding: 12px;"><strong>{{ bag.blood_group }}</strong></td>
+                    <td style="padding: 12px;">{{ bag.component_type }}</td>
+                    <td style="padding: 12px;">{{ bag.quantity }}</td>
+                    <td style="padding: 12px;">{{ bag.donation_date }}</td>
+                    <td style="padding: 12px; {% if bag.days_to_expiry < 0 %}color: #d32f2f; font-weight: bold;{% elif bag.days_to_expiry <= 7 %}color: #f57c00; font-weight: bold;{% endif %}">
+                        {{ bag.expiry_date }}
+                        {% if bag.days_to_expiry < 0 %}
+                            <br><small>(Expired)</small>
+                        {% elif bag.days_to_expiry <= 7 %}
+                            <br><small>({{ bag.days_to_expiry }} days left)</small>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;"><span style="padding: 4px 8px; border-radius: 12px; font-size: 0.85em; background: {% if bag.status == 'Available' %}#e8f5e9; color: #2e7d32;{% elif bag.status == 'Used' %}#e3f2fd; color: #1565c0;{% else %}#ffebee; color: #c62828;{% endif %}">{{ bag.status }}</span></td>
+                    <td style="padding: 12px; white-space: nowrap;">
+                        {% if bag.status == 'Available' %}
+                        <a href="{{ url_for('hospital_mark_bag', bag_id=bag.id, action='Used') }}" class="btn" style="background: #2e7d32; padding: 5px 10px; font-size: 0.85em; margin-right: 5px;" title="Mark Used"><i class="fas fa-check"></i></a>
+                        <a href="{{ url_for('hospital_mark_bag', bag_id=bag.id, action='Expired') }}" class="btn" style="background: #f57c00; padding: 5px 10px; font-size: 0.85em; margin-right: 5px;" title="Mark Expired"><i class="fas fa-hourglass-end"></i></a>
+                        <button onclick="openEditModal('{{ bag.id }}', '{{ bag.blood_group }}', '{{ bag.component_type }}', '{{ bag.quantity }}', '{{ bag.donation_date }}', '{{ bag.expiry_date }}')" class="btn" style="background: #1976d2; padding: 5px 10px; font-size: 0.85em; margin-right: 5px;" title="Edit"><i class="fas fa-edit"></i></button>
+                        <a href="{{ url_for('hospital_mark_bag', bag_id=bag.id, action='Delete') }}" class="btn" style="background: #c62828; padding: 5px 10px; font-size: 0.85em;" onclick="return confirm('Are you sure you want to delete this bag permanently?')" title="Delete"><i class="fas fa-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 1rem; text-align: center; padding: 2rem;">No active inventory available. Add stock using the form above.</p>
+    {% endif %}
+</div>
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 2rem;">
+    <h3>Inventory History (Used / Expired)</h3>
+    {% if history_bags %}
+    <div style="overflow-x: auto; margin-top: 1rem;">
+        <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; text-align: left;">
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Bag ID</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Blood Group</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Component Type</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Qty (ml/units)</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Donated On</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Expired On</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Status</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #ddd;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bag in history_bags %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">#{{ bag.id }}</td>
+                    <td style="padding: 12px;"><strong>{{ bag.blood_group }}</strong></td>
+                    <td style="padding: 12px;">{{ bag.component_type }}</td>
+                    <td style="padding: 12px;">{{ bag.quantity }}</td>
+                    <td style="padding: 12px;">{{ bag.donation_date }}</td>
+                    <td style="padding: 12px;">{{ bag.expiry_date }}</td>
+                    <td style="padding: 12px;"><span style="padding: 4px 8px; border-radius: 12px; font-size: 0.85em; background: {% if bag.status == 'Used' %}#e3f2fd; color: #1565c0;{% else %}#ffebee; color: #c62828;{% endif %}">{{ bag.status }}</span></td>
+                    <td style="padding: 12px;">
+                        <a href="{{ url_for('hospital_mark_bag', bag_id=bag.id, action='Delete') }}" class="btn" style="background: #c62828; padding: 5px 10px; font-size: 0.85em;" onclick="return confirm('Are you sure you want to delete this historical record permanently?')" title="Delete"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #666; margin-top: 1rem; text-align: center; padding: 2rem;">No history records found.</p>
+    {% endif %}
+</div>
+
+<!-- Edit Bag Modal -->
+<div id="editBagModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: var(--surface); padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; position: relative;">
+        <span onclick="document.getElementById('editBagModal').style.display='none'" style="position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 1.5rem; color: var(--text);">&times;</span>
+        <h3 style="margin-top: 0;">Edit Inventory Stock</h3>
+        <form id="editBagForm" method="POST" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Blood Group</label>
+                <select name="blood_group" id="editBg" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; background: var(--surface); color: var(--text);">
+                    <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Component Type</label>
+                <select name="component_type" id="editComp" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; background: var(--surface); color: var(--text);">
+                    <option value="Whole Blood">Whole Blood</option>
+                    <option value="Plasma">Plasma</option>
+                    <option value="Platelets">Platelets</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Quantity (ml/units)</label>
+                <input type="number" name="quantity" id="editQty" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; background: var(--surface); color: var(--text);">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Donation Date</label>
+                    <input type="date" name="donation_date" id="editDdate" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; background: var(--surface); color: var(--text);">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Expiry Date</label>
+                    <input type="date" name="expiry_date" id="editEdate" required style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 5px; background: var(--surface); color: var(--text);">
+                </div>
+            </div>
+            <button type="submit" class="btn" style="width: 100%; margin-top: 0.5rem;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(id, bg, comp, qty, ddate, edate) {
+    document.getElementById('editBagForm').action = '/hospital/edit-bag/' + id;
+    document.getElementById('editBg').value = bg;
+    document.getElementById('editComp').value = comp;
+    document.getElementById('editQty').value = qty;
+    document.getElementById('editDdate').value = ddate;
+    document.getElementById('editEdate').value = edate;
+    document.getElementById('editBagModal').style.display = 'flex';
+}
+
+document.getElementById('inventorySearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let tables = document.querySelectorAll('.table tbody');
+    
+    tables.forEach(tbody => {
+        let rows = tbody.getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            let rowText = rows[i].textContent.toLowerCase();
+            if (rowText.includes(filter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

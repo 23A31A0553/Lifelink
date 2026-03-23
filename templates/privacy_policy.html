@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="padding: 2rem; max-width: 800px; margin: 2rem auto; background: var(--surface); border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h2 style="color: var(--primary);"><i class="fas fa-shield-alt"></i> Privacy Policy & Data Handling</h2>
+    <p style="color: #666; font-size: 0.9rem;">Last Updated: October 2023</p>
+    
+    <div style="margin-top: 1.5rem; line-height: 1.6;">
+        <h3 style="color: var(--secondary);">1. Data Collection</h3>
+        <p>LifeLink strictly collects geolocation data, medical vitals (Hemoglobin, BP), and immutable contact details solely for the purpose of matching life-saving blood emergency requisitions via AI algorithms.</p>
+        
+        <h3 style="color: var(--secondary); margin-top: 1rem;">2. Compliance & Storage</h3>
+        <p>Your data is secured behind cryptographic checks. By checking the GDPR Consent box during registration, an immutable Consent Log tracking your IP Address and timestamp is generated to guarantee your explicit permission for system processing.</p>
+
+        <h3 style="color: var(--secondary); margin-top: 1rem;">3. Data Deletion</h3>
+        <p>You can request a complete wipe of your medical identity from the central LifeLink registry at any time by contacting the Administrator via the provided channels.</p>
+    </div>
+</div>
+{% endblock %}

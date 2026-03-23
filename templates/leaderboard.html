@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="padding: 2rem; max-width: 800px; margin: auto; text-align: center;">
+    <h2>🏆 LifeLink Local Heroes</h2>
+    <p style="color: #666;">Honoring our most active donors for their consistent, life-saving commitments.</p>
+
+    <div style="margin-top: 2rem; background: var(--surface); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <tr style="border-bottom: 2px solid #ffccd5; color: var(--primary);">
+                <th style="padding: 12px;">Rank</th>
+                <th style="padding: 12px;">Hero Name</th>
+                <th style="padding: 12px;">Badge Status</th>
+                <th style="padding: 12px;">Lifetime Donations</th>
+                <th style="padding: 12px;">Reputation Score</th>
+            </tr>
+            {% for donor in donors %}
+            <tr style="border-bottom: 1px solid #eee; transition: background 0.3s; cursor: default;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'">
+                <td style="padding: 12px; font-weight: bold; font-size: 1.1rem; color: #555;">#{{ loop.index }}</td>
+                <td style="padding: 12px; font-weight: 500;">{{ donor.full_name }}</td>
+                <td style="padding: 12px; font-weight: bold; color: var(--primary);">{{ donor.badge }}</td>
+                <td style="padding: 12px;">{{ donor.history|length }} Units</td>
+                <td style="padding: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>{{ "%.1f"|format(donor.reputation_score or 100) }} / 100</span>
+                        {% if donor.reputation_score and donor.reputation_score > 90 %}
+                        <i class="fas fa-star" style="color: gold; font-size: 0.9rem;"></i>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #777;">Recordings are still populating. Be the first hero!</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

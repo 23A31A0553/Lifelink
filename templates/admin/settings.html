@@ -1,0 +1,57 @@
+{% extends 'admin/base.html' %}
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card">
+        <h3>Parametric Configuration</h3>
+        <form method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label>Donation Gap (Days)</label>
+                <input type="number" name="donation_gap" value="{{ settings.donation_gap_days }}" required>
+                <small style="color: grey;">Minimum days between donations.</small>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Emergency Search Radius (km)</label>
+                <input type="number" name="radius" value="{{ settings.emergency_radius_km }}" required>
+                <small style="color: grey;">Default range for donor search.</small>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>Admin Contact Email</label>
+                <input type="email" name="email" value="{{ settings.admin_contact_email }}" required>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #eee;">
+            <h4>Request Expiry (Days)</h4>
+            <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label>Critical</label>
+                    <input type="number" name="critical_expiry" value="{{ settings.critical_expiry_days }}" required>
+                </div>
+                <div>
+                    <label>Medium</label>
+                    <input type="number" name="medium_expiry" value="{{ settings.medium_expiry_days }}" required>
+                </div>
+                <div>
+                    <label>Low</label>
+                    <input type="number" name="low_expiry" value="{{ settings.low_expiry_days }}" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Configuration</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Database & System</h3>
+        <p>Database Path: <code>sqlite:///lifelink.db</code></p>
+        <p>Server Time: <span id="time"></span></p>
+        <button class="btn btn-danger" onclick="alert('Feature disabled in demo')">Clear All Cache</button>
+    </div>
+</div>
+<script>
+    document.getElementById('time').innerText = new Date().toLocaleString();
+</script>
+{% endblock %}

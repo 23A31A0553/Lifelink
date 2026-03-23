@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: var(--secondary); font-size: 2.2rem; margin-bottom: 0.5rem;">Welcome back, {{ user.full_name }} 👋</h1>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <span style="background: rgba(43, 45, 66, 0.1); color: var(--secondary); padding: 5px 15px; border-radius: 20px; font-size: 0.95rem; font-weight: 600;">
+                <i class="fas fa-star" style="color: #f39c12; margin-right: 5px;"></i> Trust Score: {{ "%.0f"|format(user.reputation_score) }}
+            </span>
+            {% if user.is_available %}
+            <span style="background: rgba(46, 204, 113, 0.15); color: var(--accent); padding: 5px 15px; border-radius: 20px; font-size: 0.95rem; font-weight: 600;">
+                <i class="fas fa-check-circle" style="margin-right: 5px;"></i> Eligible to Donate
+            </span>
+            {% else %}
+            <span style="background: rgba(230, 81, 0, 0.1); color: #e65100; padding: 5px 15px; border-radius: 20px; font-size: 0.95rem; font-weight: 600;">
+                <i class="fas fa-clock" style="margin-right: 5px;"></i> Next eligibility in {{ (90 - (datetime.utcnow().date() - user.last_donation_date).days) if user.last_donation_date else 'Soon' }} days
+            </span>
+            {% endif %}
+        </div>
+    </div>
+    <div style="text-align: right;">
+        <a href="{{ url_for('request_blood') }}" class="btn btn-primary btn-glow hover-lift">
+            <i class="fas fa-tint" style="margin-right: 5px;"></i> Request Blood
+        </a>
+    </div>
+</div>
+
+<!-- Emotional Hook & Impact Stats -->
+<div class="stats-grid" style="margin-top: 0; margin-bottom: 2.5rem;">
+    <div class="stat-card hover-lift" style="background: rgba(255, 51, 102, 0.05); border-color: rgba(255, 51, 102, 0.1);">
+        <i class="fas fa-heartbeat" style="color: var(--primary); font-size: 3rem;"></i>
+        <h2 style="color: var(--primary);">{{ user.history|length * 3 if user.history else 3 }}</h2>
+        <p style="font-weight: 600; color: var(--secondary);">Lives You Can Save ❤️</p>
+    </div>
+    <div class="stat-card hover-lift">
+        <i class="fas fa-award" style="color: #f39c12; font-size: 3rem;"></i>
+        <h2 style="color: var(--secondary);">{{ user.history|length if user.history else 0 }}</h2>
+        <p style="font-weight: 600; color: var(--secondary);">Total Donations</p>
+    </div>
+    <div class="stat-card hover-lift" style="border-left: 4px solid var(--accent);">
+        <i class="fas fa-user-md" style="color: var(--accent); font-size: 3rem;"></i>
+        <h2 style="color: var(--secondary);">{{ user.blood_group }}</h2>
+        <p style="font-weight: 600; color: var(--secondary);">Your Blood Group</p>
+    </div>
+</div>
+
+<!-- Critical Emergency Highlight -->
+{% set critical_found = false %}
+{% for req in nearby_requests %}
+    {% if req.urgency_level == 'Critical' and not critical_found %}
+    <div class="card animate-pulse-border hover-lift" style="background: rgba(255, 51, 102, 0.03); border-color: var(--primary); margin-bottom: 2.5rem; position: relative; overflow: visible;">
+        <div style="position: absolute; top: -15px; right: -15px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(255,51,102,0.4); z-index: 10;">
+            URGENT
+        </div>
+        <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle"></i> Emergency Near You
+        </h3>
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+            <strong>{{ req.patient_name }}</strong> desperately needs <strong>{{ req.blood_group }}</strong> blood at <strong>{{ req.hospital_name }}</strong> (<small>{{ req.hospital_location }}</small>).
+        </p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <form method="POST" action="{{ url_for('express_interest', req_id=req.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-primary btn-glow hover-lift" style="padding: 0.8rem 2rem;"><i class="fas fa-hand-holding-medical" style="margin-right: 8px;"></i> I Can Donate</button>
+            </form>
+            <a href="tel:{{ req.contact_number }}" class="btn btn-outline hover-lift" style="padding: 0.8rem 2rem;"><i class="fas fa-phone-alt" style="margin-right: 8px;"></i> Call Hospital</a>
+        </div>
+    </div>
+    {% set critical_found = true %}
+    {% endif %}
+{% endfor %}
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+    
+    <!-- Nearby Requests -->
+    <div style="min-width: 0;">
+        <h2 style="margin-bottom: 1rem; color: var(--secondary); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i> Active Local Requests
+        </h2>
+        {% if nearby_requests %}
+        <div class="table-container hover-lift">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Hospital / Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in nearby_requests %}
+                    <tr style="{% if req.urgency_level == 'Critical' %}background: rgba(255,51,102,0.05);{% endif %}">
+                        <td>
+                            <strong style="display: block; font-size: 1.1rem; color: var(--secondary);">{{ req.patient_name }}</strong>
+                            <span style="color: var(--primary); font-weight: bold; font-size: 0.9rem;">{{ req.blood_group }}</span>
+                        </td>
+                        <td>
+                            <strong style="color: var(--secondary);">{{ req.hospital_name }}</strong><br>
+                            <span style="font-size: 0.85rem; color: #666;"><i class="fas fa-location-arrow" style="margin-right: 4px;"></i> {{ req.hospital_location }}</span>
+                            {% if req.urgency_level == 'Critical' %}
+                            <br><span style="color: var(--primary); font-size: 0.8rem; font-weight: bold; text-transform: uppercase;"><i class="fas fa-exclamation-circle" style="margin-right: 4px;"></i> Critical Priority</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('express_interest', req_id=req.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-secondary hover-lift" style="padding: 0.5rem 1rem; font-size: 0.85rem;"><i class="fas fa-check" style="margin-right: 5px;"></i> Help</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card hover-lift" style="text-align: center; padding: 4rem 2rem;">
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--accent); margin-bottom: 1.5rem;"></i>
+            <h3 style="color: var(--secondary);">All Clear</h3>
+            <p style="color: #666; font-size: 1.1rem;">There are currently no active blood requests in your area. We will notify you when an emergency arises.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Your Activity -->
+    <div style="min-width: 0;">
+        <h2 style="margin-bottom: 1rem; color: var(--secondary); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-history" style="color: var(--accent);"></i> Your Activity
+        </h2>
+        {% if requests %}
+        <div class="card" style="padding: 0; overflow: hidden;">
+            {% for req in requests %}
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                <div>
+                    <strong style="display: block; color: var(--secondary); font-size: 1.1rem;">{{ req.patient_name }} <span style="color: var(--primary);">({{ req.blood_group }})</span></strong>
+                    <span style="font-size: 0.85rem; color: #888;">{{ req.created_at.strftime('%Y-%m-%d') }}</span>
+                    {% if req.status == 'Pending' %}
+                    <form method="POST" action="{{ url_for('cancel_request', req_id=req.id) }}" style="margin-top: 10px;">
+                        <button type="submit" style="background:none; border:none; color: var(--primary); cursor:pointer; font-size: 0.85rem; font-weight: 600;" onclick="return confirm('Cancel this request?')"><i class="fas fa-times-circle" style="margin-right: 4px;"></i> Cancel Request</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 0.85rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; background: {{ req.status_color }}; border: 1px solid rgba(0,0,0,0.1); color: var(--secondary);">{{ req.status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+            <i class="fas fa-clipboard-list" style="font-size: 2.5rem; color: #ccc; margin-bottom: 1rem;"></i>
+            <p style="color: #666; font-size: 0.95rem;">No active requests made by you.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

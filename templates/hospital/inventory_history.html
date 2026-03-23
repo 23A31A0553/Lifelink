@@ -1,0 +1,84 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2><i class="fas fa-history"></i> Inventory History</h2>
+</div>
+
+<div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <form method="GET" action="{{ url_for('hospital_history') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Blood Group</label>
+            <select name="blood_group" style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                <option value="">All Groups</option>
+                <option value="A+" {% if request.args.get('blood_group') == 'A+' %}selected{% endif %}>A+</option>
+                <option value="A-" {% if request.args.get('blood_group') == 'A-' %}selected{% endif %}>A-</option>
+                <option value="B+" {% if request.args.get('blood_group') == 'B+' %}selected{% endif %}>B+</option>
+                <option value="B-" {% if request.args.get('blood_group') == 'B-' %}selected{% endif %}>B-</option>
+                <option value="AB+" {% if request.args.get('blood_group') == 'AB+' %}selected{% endif %}>AB+</option>
+                <option value="AB-" {% if request.args.get('blood_group') == 'AB-' %}selected{% endif %}>AB-</option>
+                <option value="O+" {% if request.args.get('blood_group') == 'O+' %}selected{% endif %}>O+</option>
+                <option value="O-" {% if request.args.get('blood_group') == 'O-' %}selected{% endif %}>O-</option>
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Action Type</label>
+            <select name="action" style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                <option value="">All Actions</option>
+                <option value="Added" {% if request.args.get('action') == 'Added' %}selected{% endif %}>Added (New Stock)</option>
+                <option value="Used" {% if request.args.get('action') == 'Used' %}selected{% endif %}>Used (Fulfilled)</option>
+                <option value="Expired" {% if request.args.get('action') == 'Expired' %}selected{% endif %}>Expired</option>
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Date</label>
+            <input type="date" name="date" value="{{ request.args.get('date', '') }}" style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+        </div>
+        <div style="min-width: 120px;">
+            <button type="submit" class="btn" style="width: 100%; padding: 0.8rem; background: var(--primary); font-weight: bold;"><i class="fas fa-search"></i> Search</button>
+        </div>
+        <div>
+            <a href="{{ url_for('hospital_history') }}" class="btn" style="padding: 0.8rem; display: inline-block; background: #6c757d; text-decoration: none;"><i class="fas fa-redo"></i> Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Blood Group</th>
+                <th>Quantity</th>
+                <th>Action</th>
+                <th>Date Logged</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in history_logs %}
+            <tr>
+                <td><strong>{{ log.blood_group }}</strong></td>
+                <td>{{ log.quantity }} Unit(s)</td>
+                <td>
+                    {% if log.action == 'Added' %}
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.85em; background: #e8f5e9; color: #2e7d32;"><i class="fas fa-plus-circle"></i> Added</span>
+                    {% elif log.action == 'Used' %}
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.85em; background: #e3f2fd; color: #1565c0;"><i class="fas fa-check-circle"></i> Used</span>
+                    {% elif log.action == 'Expired' %}
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.85em; background: #ffebee; color: #c62828;"><i class="fas fa-exclamation-triangle"></i> Expired</span>
+                    {% else %}
+                        {{ log.action }}
+                    {% endif %}
+                </td>
+                <td>{{ log.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 2rem; color: #666;">
+                    No inventory history logs found matching the current filters.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

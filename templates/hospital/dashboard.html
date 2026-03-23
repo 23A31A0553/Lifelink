@@ -1,0 +1,143 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2 style="color: var(--secondary); margin: 0;"><i class="fas fa-chart-line" style="color: var(--primary); margin-right: 10px;"></i> Hospital Analytics & Dashboard</h2>
+    <div style="font-size: 0.9rem; color: #888;">Live Updates <span style="display: inline-block; width: 8px; height: 8px; background: #2ecc71; border-radius: 50%; margin-left: 5px; box-shadow: 0 0 8px #2ecc71;"></span></div>
+</div>
+
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div class="stat-card hover-lift" style="border-left: 4px solid var(--primary); background: linear-gradient(135deg, rgba(255,51,102,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-boxes" style="color: var(--primary);"></i> Total Stock</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; margin-top: 0.5rem; color: var(--text);">{{ total_stock }} <span style="font-size: 1rem; font-weight: normal; color: #888;">Units</span></p>
+        <div style="width: 100%; background: rgba(0,0,0,0.1); height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;">
+            <div style="width: {{ [100, (total_stock / 100.0) * 100]|min }}%; background: var(--primary); height: 100%; border-radius: 3px;"></div>
+        </div>
+    </div>
+    <div class="stat-card hover-lift" style="border-left: 4px solid #f39c12; background: linear-gradient(135deg, rgba(243,156,18,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-clock" style="color: #f39c12;"></i> Pending Requests</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; margin-top: 0.5rem; color: var(--text);">{{ pending_reqs }}</p>
+    </div>
+    <div class="stat-card hover-lift {% if emergency_reqs > 0 %}animate-pulse-border{% endif %}" style="border-left: 4px solid #e74c3c; background: linear-gradient(135deg, rgba(231,76,60,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #e74c3c; font-size: 1rem; font-weight: 600;"><i class="fas fa-exclamation-triangle"></i> Critical Emergencies</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; margin-top: 0.5rem; color: #e74c3c;">{{ emergency_reqs }}</p>
+    </div>
+    <div class="stat-card hover-lift" style="border-left: 4px solid #9c27b0; background: linear-gradient(135deg, rgba(156,39,176,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-hourglass-end" style="color: #9c27b0;"></i> Expiring Soon</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; margin-top: 0.5rem; color: var(--text);">{{ expiry_alerts }}</p>
+    </div>
+</div>
+
+<div class="card animate-pulse-border hover-lift" style="margin-bottom: 2.5rem; background: rgba(231, 76, 60, 0.05); border-left: 4px solid #c62828; position: relative; overflow: visible;">
+    <div style="position: absolute; top: -12px; left: 20px; background: #c62828; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 10px rgba(198,40,40,0.3);">
+        URGENT ACTION
+    </div>
+    <h3 style="color: #c62828; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-broadcast-tower"></i> Emergency Request Broadcast
+    </h3>
+    <p style="color: #666; margin-bottom: 1rem; font-size: 0.95rem;">Instantly notify all eligible donors within a 50km radius with a critical push alert.</p>
+    <form method="POST" action="{{ url_for('hospital_broadcast') }}" style="display: flex; gap: 1rem; flex-wrap: wrap; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+        <select name="blood_group" class="input-highlight" required style="flex: 1; min-width: 150px; background: var(--surface);">
+            <option value="">Target Blood Group</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+        <input type="text" name="message" class="input-highlight" placeholder="Emergency message... (e.g. Critical trauma patient needs O+ immediately!)" required style="flex: 3; min-width: 250px; background: var(--surface);">
+        <button type="submit" class="btn hover-lift" style="background: linear-gradient(135deg, #c62828, #e53935); color: white; border: none; padding: 0.8rem 2rem; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(198,40,40,0.4);"><i class="fas fa-bullhorn" style="margin-right: 5px;"></i> Broadcast Now</button>
+    </form>
+</div>
+
+<div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Trends Chart -->
+    <div class="card hover-lift" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; min-width: 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--secondary);"><i class="fas fa-chart-area" style="color: var(--primary); margin-right: 8px;"></i> Monthly Demand vs Usage</h3>
+        <div style="position: relative; flex-grow: 1; min-height: 300px; width: 100%;">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Stock Distribution -->
+    <div class="card hover-lift" style="padding: 1.5rem; border-radius: 12px; display: flex; flex-direction: column; min-width: 0;">
+        <h3 style="margin-bottom: 1rem; color: var(--secondary);"><i class="fas fa-chart-pie" style="color: var(--primary); margin-right: 8px;"></i> Current Stock by Group</h3>
+        <div style="position: relative; flex-grow: 1; min-height: 300px; width: 100%;">
+            <canvas id="stockPie"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card hover-lift" style="margin-top: 2.5rem; padding: 1.5rem; border-radius: 12px;">
+    <h3 style="margin-bottom: 1.5rem; color: var(--secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-clipboard-list" style="color: var(--accent); margin-right: 8px;"></i> Recent Requisitions</h3>
+    {% if recent_reqs %}
+    <div class="table-container">
+        <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+                {% for req in recent_reqs %}
+                <tr style="border-bottom: 1px solid var(--border-color); background: transparent;">
+                    <td style="padding: 15px 10px;">
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary); display: inline-block; width: 50px;">{{ req.blood_group }}</span>
+                        <strong style="color: var(--text);">{{ req.patient_name }}</strong>
+                    </td>
+                    <td style="text-align: right; padding: 15px 10px;">
+                        <span style="padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; background: {% if req.status == 'Pending' %}rgba(243,156,18,0.1); color: #f39c12{% elif req.status == 'Assigned' %}rgba(25,118,210,0.1); color: #1976d2{% else %}rgba(46,204,113,0.1); color: #2ecc71{% endif %}; border: 1px solid rgba(0,0,0,0.05);">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem;">
+        <i class="fas fa-file-invoice" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+        <p style="color: #888; font-size: 1.1rem;">No recent requisitions found in the system.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const isDark = document.body.getAttribute('data-theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const textColor = isDark ? '#f1f1f1' : '#333';
+    const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+    Chart.defaults.color = textColor;
+
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'bar',
+        data: {
+            labels: ['Last 30 Days'],
+            datasets: [
+                {
+                    label: 'Blood Requisitions Built',
+                    data: [{{ month_demand }}],
+                    backgroundColor: 'rgba(255, 51, 102, 0.8)',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Actual Bags Used',
+                    data: [{{ monthly_usage }}],
+                    backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } }, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const ctxPie = document.getElementById('stockPie').getContext('2d');
+    const pieData = JSON.parse('{{ stock_by_group | tojson | safe }}');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(pieData).length ? Object.keys(pieData) : ['Empty Data'],
+            datasets: [{
+                data: Object.keys(pieData).length ? Object.values(pieData) : [1],
+                backgroundColor: ['#e74c3c', '#8e44ad', '#3498db', '#1abc9c', '#2ecc71', '#f1c40f', '#e67e22', '#34495e'],
+                borderWidth: isDark ? 2 : 0,
+                borderColor: isDark ? '#1a1a2e' : '#fff'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
+    });
+</script>
+{% endblock %}

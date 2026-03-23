@@ -1,0 +1,55 @@
+{% extends 'admin/base.html' %}
+{% block title %}Live Monitoring{% endblock %}
+
+{% block content %}
+<div class="grid">
+    <div class="card" style="border-left: 5px solid red;">
+        <h3>🔥 Active Emergencies</h3>
+        {% if emergencies %}
+        <ul style="list-style: none;">
+            {% for e in emergencies %}
+            <li style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #eee;">
+                <b>{{ e.patient_name }}</b> ({{ e.blood_group }}) <br>
+                <small>📍 {{ e.hospital_name }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No active high-urgency requests. All calm.</p>
+        {% endif %}
+    </div>
+
+    <div class="card" style="border-left: 5px solid green;">
+        <h3>🟢 Online Donors (Live)</h3>
+        <p style="color: grey;">Simulated Real-time activity</p>
+        <ul style="list-style: none; margin-top: 1rem;">
+            {% for d in online %}
+            <li style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>{{ d.full_name }}</span>
+                <span class="badge" style="background: #e8f5e9; color: green; padding: 2px 6px; border-radius: 4px;">{{
+                    d.blood_group }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>System Health</h3>
+        <p>✅ Database Connected</p>
+        <p>✅ AI Engine Idling</p>
+        <p>✅ Notification Service Ready</p>
+    </div>
+</div>
+
+<div class="card mt-2">
+    <h3>Quick Data Export</h3>
+    <div style="display: flex; gap: 1rem;">
+        <a href="{{ url_for('admin_export', type='donors') }}" class="btn btn-primary"><i class="fas fa-file-csv"></i>
+            Export Donors</a>
+        <a href="{{ url_for('admin_export', type='requests') }}" class="btn btn-primary"><i class="fas fa-file-csv"></i>
+            Export Requests</a>
+        <a href="{{ url_for('admin_export', type='logs') }}" class="btn btn-secondary"><i class="fas fa-file-csv"></i>
+            Export Logs</a>
+    </div>
+</div>
+{% endblock %}

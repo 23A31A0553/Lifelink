@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="text-align: center; padding: 10vh 1rem;">
+    <h1 style="font-size: 6rem; color: var(--primary); margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">404</h1>
+    <h2 style="font-size: 2rem; color: #444; margin-top: 10px;">Page Not Found</h2>
+    <p style="color: #666; font-size: 1.1rem;">The page you are looking for has been moved or doesn't exist.</p>
+    <a href="{{ url_for('home') }}" class="btn" style="margin-top: 2rem; display: inline-block; font-weight: bold;"><i class="fas fa-home"></i> Return to Safety</a>
+</div>
+{% endblock %}

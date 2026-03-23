@@ -1,0 +1,131 @@
+{% extends 'admin/base.html' %}
+{% block title %}Donor Profile - {{ donor.full_name }}{% endblock %}
+
+{% block content %}
+<div class="grid" style="grid-template-columns: 1fr 2fr;">
+    <div class="card">
+        <h3><i class="fas fa-user"></i> {{ donor.full_name }}</h3>
+        <p><strong><i class="fas fa-tint" style="color: #e74c3c;"></i> Blood Group:</strong> <span style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">{{ donor.blood_group }}</span></p>
+        <p><strong><i class="fas fa-star" style="color: #f1c40f;"></i> Reputation:</strong> {{ donor.reputation_score }}/100</p>
+        <p><strong><i class="fas fa-info-circle"></i> Status:</strong> 
+            {% if donor.is_available %}
+                <span style="color: #2ecc71; font-weight: bold;">Available</span>
+            {% else %}
+                <span style="color: #e74c3c; font-weight: bold;">Unavailable</span>
+            {% endif %}
+        </p>
+        
+        <hr style="margin: 1rem 0; border: none; border-bottom: 1px solid var(--border-color);">
+        
+        <h4>Contact & Location</h4>
+        <p><strong>Email:</strong> {{ donor.email }}</p>
+        <p><strong>Mobile:</strong> {{ donor.mobile_number }}</p>
+        <p><strong>City:</strong> {{ donor.city }}</p>
+        
+        <hr style="margin: 1rem 0; border: none; border-bottom: 1px solid var(--border-color);">
+        
+        <h4>Health Metrics</h4>
+        <p><strong>Age:</strong> {{ donor.age }}</p>
+        <p><strong>Weight:</strong> {{ donor.weight or 'N/A' }} kg</p>
+        <p><strong>Hemoglobin:</strong> {{ donor.hemoglobin or 'N/A' }} g/dL</p>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card">
+            <h3><i class="fas fa-history"></i> Donation History</h3>
+            {% if donations %}
+            <table class="table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Notes</th>
+                        <th>Blockchain Verification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in donations %}
+                    <tr>
+                        <td>{{ d.donation_date.strftime('%b %d, %Y') }}</td>
+                        <td>{{ d.notes }}</td>
+                        <td>
+                            {% if d.verified %}
+                            <span style="color: #2ecc71;"><i class="fas fa-check-circle"></i> Verified</span>
+                            {% else %}
+                            <span style="color: #e67e22;"><i class="fas fa-clock"></i> Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666;">No previous donations recorded.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-list-alt"></i> Blood Requests Generated</h3>
+            {% if requests %}
+            <table class="table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Hospital</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in requests %}
+                    <tr>
+                        <td>{{ r.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>{{ r.patient_name }}</td>
+                        <td>{{ r.hospital_name }}</td>
+                        <td>
+                    {% set status_bg, status_color = ('#d4edda', '#155724') if r.status == 'Fulfilled' else (('#fff3cd', '#856404') if r.status == 'Pending' else ('#f8d7da', '#721c24')) %}
+                            <span style="padding: 3px 8px; border-radius: 12px; font-size: 0.85em; background: {{ status_bg }}; color: {{ status_color }};">
+                                {{ r.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666;">No blood requests made by this donor.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-hand-holding-medical"></i> Assignment History</h3>
+            {% if assignments %}
+            <table class="table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Hospital</th>
+                        <th>Action Taken</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assignments %}
+                    <tr>
+                        <td>{{ a.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>{{ a.req.hospital_name if a.req else 'Unknown' }}</td>
+                        <td>
+                    {% set assign_bg, assign_color = ('#d4edda', '#155724') if a.status == 'Accepted' else (('#fff3cd', '#856404') if a.status == 'Pending' else ('#f8d7da', '#721c24')) %}
+                            <span style="padding: 3px 8px; border-radius: 12px; font-size: 0.85em; background: {{ assign_bg }}; color: {{ assign_color }};">
+                                {{ a.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666;">No assignments recorded.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

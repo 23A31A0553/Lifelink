@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificate of Appreciation - {{ user.full_name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .certificate-container { background: #fff; width: 800px; height: 600px; padding: 40px; position: relative; border: 15px solid #2c3e50; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .certificate-inner { border: 2px dashed #34495e; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .logo-icon { font-size: 60px; color: #e74c3c; margin-bottom: 20px; }
+        .title { font-size: 40px; font-weight: bold; color: #2c3e50; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .subtitle { font-size: 18px; color: #7f8c8d; margin-top: 10px; text-transform: uppercase; letter-spacing: 4px; }
+        .presented-to { font-size: 20px; color: #34495e; margin: 40px 0 10px 0; font-style: italic; }
+        .name { font-size: 48px; color: #e74c3c; font-family: 'Georgia', serif; font-weight: bold; margin: 0 0 20px 0; text-decoration: underline; text-decoration-color: rgba(231, 76, 60, 0.3); text-decoration-thickness: 3px; }
+        .description { font-size: 18px; color: #34495e; max-width: 600px; line-height: 1.6; margin: 0 auto 40px auto; }
+        .footer { display: flex; justify-content: space-between; width: 80%; margin: 0 auto; margin-top: auto; padding-bottom: 20px; }
+        .signature-box { border-top: 1px solid #7f8c8d; padding-top: 5px; width: 200px; text-align: center; color: #2c3e50; font-weight: bold; }
+        .hash-id { position: absolute; bottom: 10px; right: 20px; font-size: 10px; color: #bdc3c7; font-family: monospace; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; font-size: 300px; color: #e74c3c; z-index: 0; pointer-events: none; }
+        * { z-index: 1; }
+        
+        @media print {
+            body { background: white; }
+            .certificate-container { border-color: #333; box-shadow: none; }
+            button { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div style="position: fixed; top: 20px; right: 20px;">
+        <button onclick="window.print()" style="background: #2c3e50; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-family: inherit;">
+            <i class="fas fa-print"></i> Print Certificate
+        </button>
+    </div>
+
+    <div class="certificate-container">
+        <i class="fas fa-heartbeat watermark"></i>
+        <div class="certificate-inner">
+            <i class="fas fa-tint logo-icon"></i>
+            <h1 class="title">Certificate of Appreciation</h1>
+            <div class="subtitle">LifeLink Blood Donation System</div>
+            
+            <div class="presented-to">This proudly recognizes</div>
+            
+            <h2 class="name">{{ user.full_name }}</h2>
+            
+            <div class="description">
+                For the selfless and life-saving act of donating blood on <strong>{{ donation.donation_date.strftime('%B %d, %Y') }}</strong>. 
+                Your generosity provides hope, healing, and the gift of life to those in critical need. True heroes don't always wear capes; they give blood.
+            </div>
+            
+            <div class="footer">
+                <div class="signature-box">
+                    <div style="font-family: 'Brush Script MT', cursive; font-size: 24px; color: #34495e; line-height: 1; margin-bottom: 5px;">LifeLink Admin</div>
+                    Authorized Signature
+                </div>
+                <div class="signature-box">
+                    <div style="font-size: 16px; line-height: 1.5; margin-bottom: 5px;">{{ donation.donation_date.strftime('%Y-%m-%d') }}</div>
+                    Date of Issue
+                </div>
+            </div>
+            
+            <div class="hash-id">
+                Verification ID: {{ donation.blockchain_hash or 'PENDING_VERIFICATION' }}<br>
+                Donor ID: {{ user.id }} | Blood Group: {{ user.blood_group }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

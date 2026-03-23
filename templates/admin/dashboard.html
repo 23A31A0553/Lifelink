@@ -1,0 +1,173 @@
+{% extends 'admin/base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid" style="gap: 1.5rem;">
+    <div class="card hover-lift" style="border-left: 4px solid var(--primary); background: linear-gradient(135deg, rgba(255,51,102,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-users" style="color: var(--primary); margin-right: 5px;"></i> Total Donors</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: var(--text); margin-top: 0.5rem; line-height: 1;">{{ donors|length }}</p>
+        <small style="color: #888;">Registered Users</small>
+    </div>
+
+    <div class="card hover-lift" style="border-left: 4px solid #e74c3c; background: linear-gradient(135deg, rgba(231,76,60,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-notes-medical" style="color: #e74c3c; margin-right: 5px;"></i> Blood Requests</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: #e74c3c; margin-top: 0.5rem; line-height: 1;">{{ requests|length }}</p>
+        <small style="color: #888;">Total Posted</small>
+    </div>
+
+    <div class="card hover-lift" style="border-left: 4px solid #2ecc71; background: linear-gradient(135deg, rgba(46,204,113,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-heartbeat" style="color: #2ecc71; margin-right: 5px;"></i> Lives Impacted</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: #2ecc71; margin-top: 0.5rem; line-height: 1;">{{ helped }}</p>
+        <small style="color: #888;">Fulfilled Requests</small>
+    </div>
+
+    <div class="card hover-lift" style="border-left: 4px solid #3498db; background: linear-gradient(135deg, rgba(52,152,219,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-hospital" style="color: #3498db; margin-right: 5px;"></i> Partner Hospitals</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: #3498db; margin-top: 0.5rem; line-height: 1;">{{ hospitals_count }}</p>
+        <small style="color: #888;">Active Partners</small>
+    </div>
+
+    <div class="card hover-lift" style="border-left: 4px solid #f39c12; background: linear-gradient(135deg, rgba(243,156,18,0.05), rgba(0,0,0,0));">
+        <h3 style="color: #666; font-size: 1rem;"><i class="fas fa-hourglass-end" style="color: #f39c12; margin-right: 5px;"></i> Expired Requests</h3>
+        <p style="font-size: 2.5rem; font-weight: bold; color: #f39c12; margin-top: 0.5rem; line-height: 1;">
+            {{ requests | selectattr('status', 'equalto', 'Expired') | list | length }}
+        </p>
+        <small style="color: #888;">Timed out recently</small>
+    </div>
+</div>
+
+<div class="grid" style="margin-top: 2rem;">
+    <div class="card">
+        <h3>Donors by Blood Group</h3>
+        <canvas id="bgChart" style="max-height: 250px;"></canvas>
+    </div>
+    <div class="card">
+        <h3>Requests Status</h3>
+        <canvas id="reqChart" style="max-height: 250px;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const bgData = {{ bg_counts | tojson }};
+    const reqData = {{ req_status | tojson }};
+    
+    new Chart(document.getElementById('bgChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(bgData),
+            datasets: [{
+                data: Object.values(bgData),
+                backgroundColor: ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6']
+            }]
+        }
+    });
+    
+    new Chart(document.getElementById('reqChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(reqData),
+            datasets: [{
+                data: Object.values(reqData),
+                backgroundColor: ['#f39c12', '#2ecc71', '#e74c3c', '#95a5a6']
+            }]
+        }
+    });
+</script>
+
+<div class="grid" style="margin-top: 2rem; grid-template-columns: 2fr 1fr;">
+    <div class="card glass-panel hover-lift" style="border-left: 4px solid var(--primary); padding: 2rem; box-shadow: 0 8px 32px rgba(255,51,102,0.15); position: relative; overflow: hidden; background: linear-gradient(135deg, var(--surface) 0%, rgba(20,20,30,0.8) 100%);">
+        <div style="position: absolute; top: 0; right: 0; padding: 10px 20px; background: rgba(255,51,102,0.15); border-bottom-left-radius: 12px; font-weight: bold; color: var(--primary); font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+            <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 8px var(--primary);" class="animate-pulse-border"></div> Live Scan Active
+        </div>
+        <h3 style="margin-bottom: 1.5rem; color: var(--text);"><i class="fas fa-brain" style="color: var(--primary); font-size: 1.5rem; margin-right: 10px;"></i> AI-Powered Insights</h3>
+        
+        <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+            <h4 style="color: #ccc; font-weight: 500;"><i class="fas fa-exclamation-triangle" style="color: #e74c3c; margin-right: 5px;"></i> Shortage Early Warnings</h4>
+            {% if shortage_warnings %}
+                <ul style="list-style-type: none; padding-left: 0; margin-top: 1rem;">
+                {% for w in shortage_warnings %}
+                    <li style="background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.2); padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 0.95em;">
+                        <strong style="color: #e74c3c;">Blood Group {{ w.blood_group }}</strong> is at risk of severe shortage. <br>
+                        <span style="color: #888; font-size: 0.9em; display: inline-block; margin-top: 4px;">Current Stock: {{ w.stock }} | 30-Day Demand: {{ w.demand_30d }}</span>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #2ecc71; font-size: 0.95em; margin-top: 1rem; background: rgba(46,204,113,0.1); padding: 1rem; border-radius: 8px; border: 1px solid rgba(46,204,113,0.2);"><i class="fas fa-check-circle" style="margin-right: 5px;"></i> Network supply is stable. No immediate blood shortages predicted by the model.</p>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem;">
+            <h4 style="color: #ccc; font-weight: 500;"><i class="fas fa-chart-line" style="color: #f39c12; margin-right: 5px;"></i> Critical Risk Prediction</h4>
+            {% if city_risks %}
+                <p style="font-size: 0.9rem; color: #888; margin-bottom: 1rem;">High-risk regions identified based on 30-day velocity of critical requests:</p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                {% for risk in city_risks %}
+                    <div style="background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.2); padding: 15px; border-radius: 8px; text-align: center; flex: 1; min-width: 140px; position: relative;" class="hover-lift">
+                        <div style="font-weight: 600; color: #f39c12; font-size: 1.1rem; margin-bottom: 5px;">{{ risk.city }}</div>
+                        <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">{{ risk.critical_requests_30d }}</div>
+                        <div style="font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Critical Cases</div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: #888; font-size: 0.95em; margin-top: 1rem;">Accumulating data model inputs to predict emergency trends...</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>Real-time Activity</h3>
+        <table style="margin-top: 1rem;">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Mock Data for Dashboard View -->
+                <tr>
+                    <td>System</td>
+                    <td><span class="badge"
+                            style="background:#e3f2fd; color:#1565c0; padding:2px 6px; border-radius:4px;">STARTUP</span>
+                    </td>
+                    <td>Just now</td>
+                </tr>
+                <tr>
+                    <td>Admin</td>
+                    <td><span class="badge"
+                            style="background:#e8f5e9; color:#2e7d32; padding:2px 6px; border-radius:4px;">LOGIN</span>
+                    </td>
+                    <td>1 min ago</td>
+                </tr>
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin_audit_logs') }}" class="btn btn-sm btn-primary" style="margin-top: 1rem;">View All
+            Logs</a>
+    </div>
+
+    <div class="card">
+        <h3>Quick Actions</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="{{ url_for('admin_donors') }}" class="btn btn-secondary">Manage Donors</a>
+            <a href="{{ url_for('admin_requests') }}" class="btn btn-danger">View Requests</a>
+            <a href="{{ url_for('admin_communication') }}" class="btn btn-primary">Broadcast Alert</a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>📊 Regulatory Reports</h3>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">Download automated CSV exports for regulatory compliance.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="{{ url_for('admin_export', type='donors') }}" class="btn btn-sm btn-outline" style="border: 1px solid #ccc; color: #333; background: #fafafa;">📥 Donors Report</a>
+            <a href="{{ url_for('admin_export', type='requests') }}" class="btn btn-sm btn-outline" style="border: 1px solid #ccc; color: #333; background: #fafafa;">📥 Requests Report</a>
+            <a href="{{ url_for('admin_export', type='inventory') }}" class="btn btn-sm btn-outline" style="border: 1px solid #ccc; color: #333; background: #fafafa;">📥 Inventory Report</a>
+            <a href="{{ url_for('admin_export', type='donations') }}" class="btn btn-sm btn-outline" style="border: 1px solid #ccc; color: #333; background: #fafafa;">📥 Donations Log</a>
+            <a href="{{ url_for('admin_export', type='logs') }}" class="btn btn-sm btn-outline" style="border: 1px solid #ccc; color: #333; background: #fafafa;">📥 Full Audit Trail</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container" style="max-width: 800px; margin: 2rem auto; padding: 2rem 1rem;">
+    <!-- Emotional Hook or Trust Copy -->
+    <div style="text-align: center; margin-bottom: 2.5rem; padding: 1.5rem; background: rgba(255, 51, 102, 0.05); border-radius: var(--radius); border: 1px solid rgba(255, 51, 102, 0.1);">
+        <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 0.5rem;">
+            Hospital Registration
+        </h2>
+        <p style="color: #666; font-size: 1.1rem; margin-bottom: 0;">Join the most trusted emergency blood network.</p>
+    </div>
+
+    {% if error %}
+    <div style="background: #ffe3e3; color: #d00000; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #d00000;">
+        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="card-section">
+        <h3><i class="fas fa-clinic-medical" style="color: var(--primary); margin-right: 8px;"></i> Registration Details</h3>
+        
+        <form method="POST" action="{{ url_for('hospital_register') }}">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Hospital Name <span style="color: var(--primary);">*</span></label>
+                <input type="text" name="name" class="input-highlight" placeholder="e.g. Central City Hospital" required>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Email Address <span style="color: var(--primary);">*</span></label>
+                    <input type="email" name="email" class="input-highlight" placeholder="hospital@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password <span style="color: var(--primary);">*</span></label>
+                    <input type="password" name="password" class="input-highlight" placeholder="Secure password" required>
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Contact Number <span style="color: var(--primary);">*</span></label>
+                    <input type="tel" name="contact" class="input-highlight" placeholder="e.g. 555-0100" required>
+                </div>
+                <div class="form-group">
+                    <label>City <span style="color: var(--primary);">*</span></label>
+                    <input type="text" name="city" class="input-highlight" placeholder="e.g. Metropolis" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Full Address <span style="color: var(--primary);">*</span></label>
+                <input type="text" name="address" class="input-highlight" placeholder="Full physical address" required>
+            </div>
+
+            <div class="hover-lift" style="background: rgba(255, 51, 102, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(255, 51, 102, 0.1); margin-top: 2rem;">
+                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 0;">
+                    <input type="checkbox" required style="margin-top: 4px; width: 20px; height: 20px; cursor: pointer;">
+                    <span style="font-size: 0.95rem; line-height: 1.5; color: var(--secondary);">I verify that this is an authorized hospital representative registering for LifeLink. <span style="color: var(--primary);">*</span></span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-glow hover-lift" style="padding: 1rem 2.5rem; width: 100%; margin-top: 2rem; font-size: 1.2rem;">Complete Registration <i class="fas fa-check" style="margin-left: 8px;"></i></button>
+        </form>
+        
+        <p class="text-center mt-2" style="margin-top: 1.5rem; color: #666;">
+            Already registered? <a href="{{ url_for('hospital_login') }}" style="color: var(--primary); font-weight: 600;">Login here</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

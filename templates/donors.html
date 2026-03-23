@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="color: var(--secondary);">Compatible Donors Found</h2>
+    <p>Based on your request for <strong>{{ blood_request.blood_group }}</strong> blood.</p>
+    <a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a>
+</div>
+
+<!-- Map Container -->
+<div id="map" style="height: 400px; width: 100%; margin-bottom: 2rem; border-radius: 10px; border: 2px solid #ddd;">
+</div>
+
+{% if donors %}
+<div class="grid">
+    {% for donor in donors %}
+    <div class="card" style="border-left: 5px solid {{ donor.match_color }}; position: relative;">
+        <div
+            style="position: absolute; top: 1rem; right: 1rem; background: #eee; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9rem;">
+            {{ donor.score }}% Match
+        </div>
+
+        <h3>{{ donor.full_name }}</h3>
+        <p style="color: #666; margin-bottom: 0.5rem;">{{ donor.blood_group }} | {{ donor.age }} years old</p>
+
+        <div style="margin: 1rem 0;">
+            <p>📍 <strong>{{ donor.distance }} km</strong> away</p>
+            <p>📞 {{ donor.mobile_number }}</p>
+            <p>🏠 {{ donor.city }}</p>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <button
+                onclick="showDonorDetails('{{ donor.full_name }}', '{{ donor.mobile_number }}', '{{ donor.city }}', '{{ donor.age }}', '{{ donor.last_donation_date }}')"
+                class="btn" style="width: 100%; text-align: center;">📞 Contact / Call</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card text-center">
+    <h3>No safe donors found nearby.</h3>
+    <p>We searched for {{ blood_request.blood_group }} and Universal Donors (O-).</p>
+</div>
+{% endif %}
+
+<!-- Modal -->
+<div id="donorModal"
+    style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div
+        style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 10px; text-align: center;">
+        <span onclick="closeModal()"
+            style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h2 id="modalName" style="color: var(--secondary); margin-bottom: 1rem;"></h2>
+        <div style="text-align: left; margin-bottom: 1.5rem; line-height: 1.6;">
+            <p><strong>📞 Mobile:</strong> <span id="modalMobile"></span></p>
+            <p><strong>🏠 City:</strong> <span id="modalCity"></span></p>
+            <p><strong>👤 Age:</strong> <span id="modalAge"></span></p>
+            <p><strong>🩸 Last Donation:</strong> <span id="modalLastDonation"></span></p>
+        </div>
+        <a id="modalCallBtn" href="#" class="btn" style="display: block; width: 100%; box-sizing: border-box;">Dial
+            Number</a>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Map Initialization
+    var map = L.map('map').setView([20.5937, 78.9629], 5); // Default India view
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Get User Location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 12);
+
+            L.marker([lat, lng]).addTo(map)
+                .bindPopup("<b>You are here</b>").openPopup();
+
+            // Simulate Donor Locations relative to user for demo
+            // In production, use actual donor lat/long from DB
+            {% if donors %}
+            {% for donor in donors %}
+            // Random offset for demo (0.01 ~ 1km)
+            var offsetLat = (Math.random() - 0.5) * 0.05;
+            var offsetLng = (Math.random() - 0.5) * 0.05;
+            L.marker([lat + offsetLat, lng + offsetLng]).addTo(map)
+                .bindPopup("<b>{{ donor.full_name }}</b><br>{{ donor.blood_group }}<br>{{ donor.distance }}km away");
+            {% endfor %}
+            {% endif %}
+
+        }, () => {
+            alert("Location access denied. Showing default map.");
+        });
+    }
+
+    // Modal Logic
+    function showDonorDetails(name, mobile, city, age, lastDonation) {
+        document.getElementById('modalName').innerText = name;
+        document.getElementById('modalMobile').innerText = mobile;
+        document.getElementById('modalCity').innerText = city;
+        document.getElementById('modalAge').innerText = age + " years";
+        document.getElementById('modalLastDonation').innerText = lastDonation && lastDonation != 'None' ? lastDonation : "Never";
+        document.getElementById('modalCallBtn').href = "tel:" + mobile;
+        document.getElementById('donorModal').style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById('donorModal').style.display = "none";
+    }
+    window.onclick = function (event) {
+        if (event.target == document.getElementById('donorModal')) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

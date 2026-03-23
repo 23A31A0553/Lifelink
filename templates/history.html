@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h2 style="color: var(--secondary);">My Donation History</h2>
+
+    {% if history %}
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th>Certificate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>{{ record.donation_date }}</td>
+                    <td>{{ record.notes or 'No notes' }}</td>
+                    <td>
+                        <a href="{{ url_for('download_certificate', donation_id=record.id) }}" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: var(--secondary); text-decoration: none;">Download</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card text-center">
+        <h3>No donation records found.</h3>
+        <p>Once you donate, the admin will update your records here.</p>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 1rem;">
+        <a href="{{ url_for('dashboard') }}">&larr; Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

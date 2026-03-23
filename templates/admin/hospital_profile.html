@@ -1,0 +1,153 @@
+{% extends 'admin/base.html' %}
+{% block title %}Hospital Profile - {{ hospital.name }}{% endblock %}
+
+{% block content %}
+<div class="grid" style="grid-template-columns: 1fr 2fr;">
+    <div class="card">
+        <h3><i class="fas fa-hospital"></i> {{ hospital.name }}</h3>
+        <p><strong><i class="fas fa-id-badge"></i> License:</strong> {{ hospital.license_number }}</p>
+        <p><strong><i class="fas fa-user-md"></i> Contact Person:</strong> {{ hospital.contact_person }}</p>
+        <p><strong><i class="fas fa-info-circle"></i> Approval Status:</strong> 
+            {% if hospital.is_approved %}
+                <span style="color: #2ecc71; font-weight: bold;">Approved</span>
+            {% else %}
+                <span style="color: #e74c3c; font-weight: bold;">Pending Approval</span>
+            {% endif %}
+        </p>
+        
+        <hr style="margin: 1rem 0; border: none; border-bottom: 1px solid var(--border-color);">
+        
+        <h4>Location Details</h4>
+        <p><strong><i class="fas fa-map-marker-alt" style="color: #e74c3c;"></i> City:</strong> {{ hospital.city }}</p>
+        <p><strong>Address:</strong> {{ hospital.address }}</p>
+        <p><strong>Email:</strong> {{ hospital.email }}</p>
+        <p><strong>Phone:</strong> {{ hospital.mobile_number }}</p>
+        
+        <hr style="margin: 1rem 0; border: none; border-bottom: 1px solid var(--border-color);">
+        
+        <h4>Current Inventory Overview</h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 1rem;">
+            {% set bg_list = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+            {% for bg in bg_list %}
+            <div style="background: var(--bg-color); padding: 0.5rem; border-radius: 4px; text-align: center;">
+                <strong>{{ bg }}</strong>: 
+                {% set count = namespace(value=0) %}
+                {% for bag in active_bags %}
+                    {% if bag.blood_group == bg %}
+                        {% set count.value = count.value + bag.quantity %}
+                    {% endif %}
+                {% endfor %}
+                {{ count.value }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card">
+            <h3><i class="fas fa-history"></i> Inventory Activity Log</h3>
+            {% if inventory_logs %}
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action</th>
+                            <th>Blood Group</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in inventory_logs %}
+                        <tr>
+                            <td>{{ log.date.strftime('%b %d, %Y') }}</td>
+                            <td>
+                                {% set action_color = '#2ecc71' if log.action == 'Added' else ('#3498db' if log.action == 'Used' else '#e74c3c') %}
+                                <span style="font-weight: bold; color: {{ action_color }};">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td>{{ log.blood_group }}</td>
+                            <td>{{ log.quantity }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: #666;">No inventory logs recorded.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-list-alt"></i> Patient Requests</h3>
+            {% if requests %}
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Patient</th>
+                            <th>Blood Group</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests %}
+                        <tr>
+                            <td>{{ r.created_at.strftime('%b %d, %Y') }}</td>
+                            <td>{{ r.patient_name }}</td>
+                            <td>{{ r.blood_group }}</td>
+                            <td>{{ r.urgency_level }}</td>
+                            <td>
+                                {% set status_bg, status_color = ('#d4edda', '#155724') if r.status == 'Fulfilled' else (('#fff3cd', '#856404') if r.status == 'Pending' else ('#f8d7da', '#721c24')) %}
+                                <span style="padding: 3px 8px; border-radius: 12px; font-size: 0.85em; background: {{ status_bg }}; color: {{ status_color }};">
+                                    {{ r.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: #666;">No patient requests found.</p>
+            {% endif %}
+        </div>
+        
+        <div class="card">
+            <h3><i class="fas fa-bullhorn"></i> Emergency Broadcasts Sent</h3>
+            {% if broadcasts %}
+            <table class="table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Target Group</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in broadcasts %}
+                    <tr>
+                        <td>{{ b.created_at.strftime('%b %d, %Y') }}</td>
+                        <td>{{ b.blood_group }}</td>
+                        <td>{{ b.urgency_level }}</td>
+                        <td>
+                            {% set b_bg, b_color = ('#d4edda', '#155724') if b.status == 'Active' else ('#f8d7da', '#721c24') %}
+                            <span style="padding: 3px 8px; border-radius: 12px; font-size: 0.85em; background: {{ b_bg }}; color: {{ b_color }};">
+                                {{ b.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666;">No emergency broadcasts sent by this hospital.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

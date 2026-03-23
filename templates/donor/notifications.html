@@ -1,0 +1,64 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2><i class="fas fa-inbox"></i> Inbox & Alerts</h2>
+        {% if notifications %}
+        <form method="POST" action="{{ url_for('donor_notifications') }}">
+            <button type="submit" name="action" value="mark_all_read" class="btn" style="padding: 0.5rem 1rem; background: var(--primary); font-weight: bold; border: none; color: white; border-radius: 4px; cursor: pointer;"><i class="fas fa-check-double"></i> Mark All as Read</button>
+        </form>
+        {% endif %}
+    </div>
+    
+    {% if notifications %}
+    <div style="background: var(--surface); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+        {% for n in notifications %}
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: {% if not n.is_read %}rgba(52, 152, 219, 0.05){% else %}transparent{% endif %}; position: relative;">
+            
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <!-- Icon Logic based on Type -->
+                {% set icon_color = '#e74c3c' if n.type == 'Emergency' or n.type == 'EMERGENCY' else ('#2ecc71' if n.type == 'MATCH' else ('#f39c12' if n.type == 'ALERT' or n.type == 'Assignment' else '#3498db')) %}
+                <div style="font-size: 2rem; color: {{ icon_color }};">
+                    {% if n.type == 'EMERGENCY' or n.type == 'Emergency' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% elif n.type == 'MATCH' %}
+                        <i class="fas fa-handshake"></i>
+                    {% elif n.type == 'REWARD' %}
+                        <i class="fas fa-award"></i>
+                    {% elif n.type == 'Assignment' %}
+                        <i class="fas fa-hand-holding-medical"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </div>
+                
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <strong style="font-size: 1.1rem; color: var(--text);">{{ n.type|upper }}</strong>
+                        <small style="color: #999;"><i class="far fa-clock"></i> {{ n.created_at.strftime('%b %d, %Y - %H:%M') }}</small>
+                    </div>
+                    <p style="color: var(--text); line-height: 1.5; font-size: 1rem;">{{ n.message }}</p>
+                    {% if n.type == 'Assignment' and not n.is_read %}
+                    <div style="margin-top: 1rem;">
+                        <a href="{{ url_for('dashboard') }}" class="btn" style="padding: 0.5rem 1rem; background: var(--primary); color: white; border-radius: 4px; border: none; text-decoration: none; font-size: 0.9em; display: inline-block;"><i class="fas fa-external-link-alt"></i> View Assignment</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if not n.is_read %}
+                <div>
+                    <span style="padding: 4px 8px; background: var(--primary); color: white; border-radius: 12px; font-size: 0.7em; font-weight: bold;">NEW</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem; background: var(--surface); border-radius: 8px; color: #666;">
+        <i class="far fa-envelope-open" style="font-size: 4rem; color: #ddd; margin-bottom: 1rem;"></i>
+        <h3>All Caught Up!</h3>
+        <p>You have no pending alerts or notifications.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

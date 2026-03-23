@@ -1,0 +1,41 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<div style="background: var(--surface); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-history"></i> My Donation History</h2>
+    
+    {% if history %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background: rgba(0,0,0,0.05); border-bottom: 2px solid var(--border-color);">
+                    <th style="padding: 1rem;">Donation Date</th>
+                    <th style="padding: 1rem;">Notes / Location</th>
+                    <th style="padding: 1rem;">Verification Hash</th>
+                    <th style="padding: 1rem; text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 1rem; font-weight: bold; color: var(--primary);">{{ h.donation_date }}</td>
+                    <td style="padding: 1rem;">{{ h.notes or "LifeLink Verified Centers" }}</td>
+                    <td style="padding: 1rem; font-family: monospace; font-size: 0.8em; color: #666;">
+                        {{ h.blockchain_hash[:16] if h.blockchain_hash else 'N/A' }}...
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">
+                        <a href="{{ url_for('donor_certificate', history_id=h.id) }}" target="_blank" class="btn" style="background: #1976d2; color: white; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9em;"><i class="fas fa-award"></i> Certificate</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: #666;">
+        <i class="fas fa-tint-slash" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+        <h3>No Donations Yet</h3>
+        <p>Your life-saving journey begins with your first donation!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

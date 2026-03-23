@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Live Donor Map{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h2>📍 Live Donor Availability Map</h2>
+            <p>Real-time view of donors and emergency coverage.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #2ecc71; display: inline-block;"></span>
+                <small>Online</small>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #95a5a6; display: inline-block;"></span>
+                <small>Offline</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="liveMap" style="height: 600px; width: 100%; border-radius: 12px; border: 2px solid #eee; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const map = L.map('liveMap').setView([20.5937, 78.9629], 5); // Default India view
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    function loadDonors() {
+        fetch('/api/live-map')
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(donor => {
+                    const color = donor.status === 'Online' ? '#2ecc71' : '#e74c3c';
+                    const markerColor = donor.eligible === 'Yes' ? '#2ecc71' : '#f39c12';
+                    
+                    const marker = L.circleMarker([donor.lat, donor.lon], {
+                        radius: 8,
+                        fillColor: markerColor,
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <div style="text-align: center; font-family: sans-serif;">
+                            <strong style="font-size: 1.1rem; color: var(--secondary);">${donor.name}</strong><br>
+                            <span style="display: inline-block; padding: 2px 8px; background: #ffebee; color: #c62828; border-radius: 4px; font-weight: bold; margin: 5px 0;">${donor.bg}</span><br>
+                            <small>Status: <b>${donor.status}</b></small><br>
+                            <small>Eligible: <b>${donor.eligible}</b></small><br>
+                            <small>Score: <b>${donor.reputation}</b></small>
+                        </div>
+                    `);
+                });
+            });
+    }
+
+    // Try to center on user
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 12);
+            L.circle([pos.coords.latitude, pos.coords.longitude], {
+                radius: 50000, // 50km
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.1
+            }).addTo(map).bindPopup("Your 50km Emergency Radius");
+        });
+    }
+
+    loadDonors();
+</script>
+{% endblock %}

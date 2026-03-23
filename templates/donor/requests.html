@@ -1,0 +1,44 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2><i class="fas fa-list-alt"></i> Active Blood Requests</h2>
+    <form method="GET" action="{{ url_for('donor_requests') }}" style="display: flex; gap: 0.5rem;">
+        <select name="blood_group" style="padding: 0.5rem; background: var(--bg-color); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px;">
+            <option value="">Any Blood Group</option>
+            {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+            <option value="{{ bg }}" {% if request.args.get('blood_group') == bg %}selected{% endif %}>{{ bg }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; border: none; border-radius: 4px; background: #3498db; color: white; cursor: pointer;">Filter</button>
+    </form>
+</div>
+
+{% if requests %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% for r in requests %}
+    <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: {% if r.urgency_level == 'Critical' %}#e74c3c{% elif r.urgency_level == 'High' %}#f39c12{% else %}#3498db{% endif %};"></div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <strong style="font-size: 1.5rem; color: #e74c3c;">{{ r.blood_group }}</strong>
+            <span style="font-size: 0.9rem; font-weight: bold; padding: 0.3rem 0.6rem; border-radius: 12px; background: {% if r.urgency_level == 'Critical' %}#ffebee; color: #c62828{% elif r.urgency_level == 'High' %}#fff8e1; color: #f57c00{% else %}#e3f2fd; color: #1565c0{% endif %};">{{ r.urgency_level }}</span>
+        </div>
+        
+        <p style="margin-bottom: 0.5rem;"><i class="fas fa-user-injured" style="width: 20px; color: #666;"></i> {{ r.patient_name }}</p>
+        <p style="margin-bottom: 0.5rem;"><i class="fas fa-hospital" style="width: 20px; color: #666;"></i> {{ r.hospital_name }}</p>
+        <p style="margin-bottom: 1.5rem; color: #e74c3c; font-weight: bold;"><i class="fas fa-map-marker-alt" style="width: 20px;"></i> {{ r.distance }} km away</p>
+        
+        <form method="POST" action="{{ url_for('donor_accept_request', req_id=r.id) }}">
+            <button class="btn" style="width: 100%; padding: 0.8rem; border: none; border-radius: 4px; background: #2ecc71; color: white; font-weight: bold; cursor: pointer; transition: background 0.3s;"><i class="fas fa-hand-holding-medical"></i> Accept & Save Life</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 3rem; background: var(--surface); border-radius: 8px; color: #666;">
+    <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+    <h3>No Requests Found</h3>
+    <p>There are currently no active requests matching your criteria nearby.</p>
+</div>
+{% endif %}
+{% endblock %}

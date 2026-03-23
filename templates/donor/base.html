@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Portal - LifeLink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+    <style>
+        .donor-layout { display: block; min-height: 100vh; background: var(--bg-color); }
+        .sidebar { width: 250px; background: var(--surface); border-right: 1px solid var(--border-color); padding: 2rem 1rem; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+        .sidebar h2 { color: var(--primary); margin-bottom: 2rem; text-align: center; }
+        .sidebar a { display: block; padding: 1rem; color: var(--text); text-decoration: none; border-radius: 5px; margin-bottom: 0.5rem; transition: background 0.3s; font-weight: 500;}
+        .sidebar a:hover, .sidebar a.active { background: rgba(229, 57, 53, 0.1); color: var(--primary); }
+        .sidebar a i { width: 25px; }
+        .content { margin-left: 250px; padding: 2rem; overflow-y: auto; min-height: 100vh; box-sizing: border-box; }
+        
+        @media (max-width: 768px) {
+            .donor-layout { display: flex; flex-direction: column; }
+            .sidebar { position: relative; width: 100%; height: auto; padding: 1rem; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; }
+            .sidebar h2, .sidebar p { width: 100%; text-align: center; margin-bottom: 0.5rem; }
+            .sidebar a { margin-bottom: 0; flex: 1; min-width: 120px; text-align: center; font-size: 0.9rem; }
+            .content { margin-left: 0; padding: 1rem; }
+        }
+        .alert { padding: 1rem; margin-bottom: 1rem; border-radius: 5px; font-weight: 500; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .theme-btn { 
+            margin-top: auto; 
+            background: none; 
+            border: none; 
+            color: var(--text); 
+            padding: 1rem; 
+            text-align: left; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        .theme-btn:hover { background: rgba(229, 57, 53, 0.1); color: var(--primary); }
+    </style>
+</head>
+<body style="background-color: var(--background); color: var(--text);">
+    <div class="donor-layout">
+        <div class="sidebar">
+            <h2><i class="fas fa-heartbeat"></i> Portal</h2>
+            <p style="text-align: center; margin-bottom: 2rem; font-size: 0.9em; opacity: 0.8;">Welcome, {{ current_user.full_name }}</p>
+            
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="{{ url_for('edit_profile') }}"><i class="fas fa-user-edit"></i> Profile & Health</a>
+            <a href="{{ url_for('my_history') }}"><i class="fas fa-history"></i> Donations</a>
+            <!-- Features -->
+            <a href="{{ url_for('donor_map') }}"><i class="fas fa-map-marked-alt"></i> Live Map</a>
+            <a href="{{ url_for('donor_requests') }}"><i class="fas fa-list-alt"></i> Requests</a>
+            <a href="{{ url_for('donor_notifications') }}"><i class="fas fa-bell"></i> Notifications</a>
+            <a href="{{ url_for('change_password') }}"><i class="fas fa-lock"></i> Security</a>
+            <button id="donorThemeToggle" class="theme-btn"><i class="fas fa-moon" style="width: 25px;"></i> Theme Toggle</button>
+            <a href="{{ url_for('logout') }}" style="color: #c62828;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+        
+        <div class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {% if category == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block donor_content %}{% endblock %}
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        const dThemeBtn = document.getElementById('donorThemeToggle');
+        if(dThemeBtn) {
+            dThemeBtn.addEventListener('click', () => {
+                const cur = document.documentElement.getAttribute('data-theme') || 'light';
+                const nxt = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', nxt);
+                localStorage.setItem('theme', nxt);
+            });
+        }
+    </script>
+</body>
+</html>

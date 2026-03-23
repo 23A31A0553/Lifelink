@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h2>Chat with {{ partner.full_name }}</h2>
+        <a href="{{ url_for('dashboard') }}" class="btn" style="background: #999; padding: 0.5rem 1rem;">Back</a>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chat-box" style="
+        height: 60vh; 
+        border: 1px solid #ddd; 
+        border-radius: 10px; 
+        overflow-y: scroll; 
+        padding: 1rem; 
+        background: #f9f9f9; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 0.5rem;">
+
+        {% for msg in messages %}
+        <div class="message {{ 'sent' if msg.sender_id == current_user.id else 'received' }}"
+            style="
+                max-width: 70%; 
+                padding: 0.8rem 1rem; 
+                border-radius: 15px; 
+                {{ 'align-self: flex-end; background: var(--primary); color: white;' if msg.sender_id == current_user.id else 'align-self: flex-start; background: #e0e0e0; color: #333;' }}">
+            {{ msg.message }}
+            <div style="font-size: 0.7rem; opacity: 0.7; text-align: right; margin-top: 5px;">
+                {{ msg.timestamp.strftime('%H:%M') }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Input Area -->
+    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+        <input type="text" id="message-input" placeholder="Type a message..." style="
+            flex: 1; 
+            padding: 1rem; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            font-size: 1rem;" onkeypress="handleEnter(event)">
+        <button onclick="sendMessage()" class="btn" style="padding: 0 1.5rem;">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const partnerId = {{ partner.id }};
+    const currentUserId = {{ current_user.id }};
+
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Auto-scroll on load
+    scrollToBottom();
+
+    function handleEnter(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('message-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        // Optimistic UI update
+        addMessageToUI(text, 'sent');
+        input.value = '';
+
+        try {
+            const res = await fetch('/api/send_message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    receiver_id: partnerId,
+                    message: text
+                })
+            });
+            if (!res.ok) console.error('Failed to send');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function addMessageToUI(text, type, time = null) {
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+
+        const isSent = type === 'sent';
+        div.style.cssText = `
+            max-width: 70%; 
+            padding: 0.8rem 1rem; 
+            border-radius: 15px; 
+            align-self: ${isSent ? 'flex-end' : 'flex-start'}; 
+            background: ${isSent ? 'var(--primary)' : '#e0e0e0'}; 
+            color: ${isSent ? 'white' : '#333'};
+        `;
+
+        if (!time) {
+            const now = new Date();
+            time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        div.innerHTML = `
+            ${text}
+            <div style="font-size: 0.7rem; opacity: 0.7; text-align: right; margin-top: 5px;">
+                ${time}
+            </div>
+        `;
+        chatBox.appendChild(div);
+        scrollToBottom();
+    }
+
+    // Polling for new messages
+    let lastLength = {{ messages| length }};
+
+    async function pollMessages() {
+        try {
+            const res = await fetch(`/api/get_messages/${partnerId}`);
+            const data = await res.json();
+
+            if (data.length > lastLength) {
+                // Clear and rebuild or just append new ones. Rebuilding is safer for sync.
+                chatBox.innerHTML = '';
+                data.forEach(msg => {
+                    addMessageToUI(msg.message, msg.sender_id === currentUserId ? 'sent' : 'received', msg.timestamp);
+                });
+                lastLength = data.length;
+            }
+        } catch (err) {
+            console.error('Polling error', err);
+        }
+    }
+
+    setInterval(pollMessages, 3000); // Poll every 3 seconds
+
+</script>
+{% endblock %}

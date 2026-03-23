@@ -1,0 +1,118 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+    
+    <!-- Left Column: Metrics and Status -->
+    <div style="flex: 2; min-width: 300px;">
+        
+    {% set elig_border = '#2ecc71' if is_eligible else '#e74c3c' %}
+    <div style="background: var(--surface); padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid {{ elig_border }}; margin-bottom: 2rem;">
+        <h3><i class="fas fa-heartbeat"></i> Eligibility Status</h3>
+        {% if is_eligible %}
+        <h2 style="color: #2ecc71; margin: 1rem 0;">Ready to Donate!</h2>
+        <p>{{ elig_message }}</p>
+        {% else %}
+        <h2 style="color: #e74c3c; margin: 1rem 0;">Currently Blocked</h2>
+        <p style="color: #ff9800; font-weight: bold;">{{ elig_message }}</p>
+        <p style="margin-top: 0.5rem;">Next Eligible Date: <strong>{{ next_date.strftime('%B %d, %Y') if next_date else 'Unknown' }}</strong></p>
+        {% endif %}
+    </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <!-- Total Donations -->
+            <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                <i class="fas fa-hand-holding-medical" style="font-size: 2.5rem; color: #e91e63;"></i>
+                <h4 style="margin-top: 1rem;">Total Donations</h4>
+                <p style="font-size: 2rem; font-weight: bold; color: var(--text);">{{ total_donations }}</p>
+            </div>
+            <!-- Reputation Score -->
+            <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                <i class="fas fa-star" style="font-size: 2.5rem; color: #f1c40f;"></i>
+                <h4 style="margin-top: 1rem;">Reputation Score</h4>
+                <p style="font-size: 2rem; font-weight: bold; color: var(--text);">{{ user.reputation_score }}/100</p>
+            </div>
+        </div>
+
+        <!-- My Active Accepted Requests -->
+        {% if requests %}
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3>My Posted Requests</h3>
+            <!-- Existing logic if donor posts requests -->
+            <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                {% for r in requests %}
+                <li style="padding: 0.8rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <span>{{ r.patient_name }} ({{ r.blood_group }})</span>
+                    <span style="font-weight: bold;">{{ r.status }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Notifications and Urgent Requests -->
+    <div style="flex: 1; min-width: 300px;">
+        
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+            <h3><i class="fas fa-bell"></i> Alerts & Inbox</h3>
+            {% if notifications %}
+                <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                {% for n in notifications %}
+                    <li style="padding: 1rem; border-left: 3px solid #ff9800; background: var(--bg-color); margin-bottom: 0.5rem; border-radius: 4px;">
+                        <strong>{{ n.type }}</strong>
+                        <p style="font-size: 0.9em; margin-top: 0.3rem;">{{ n.message }}</p>
+                        <small style="color: #666;">{{ n.created_at.strftime('%m/%d %H:%M') }}</small>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #666; margin-top: 1rem;">No new notifications.</p>
+            {% endif %}
+        </div>
+
+        {% if assignments %}
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 4px solid #f39c12; margin-bottom: 2rem;">
+            <h3 style="color: #f39c12;"><i class="fas fa-hand-holding-medical"></i> Action Required: Assignments</h3>
+            <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+            {% for a in assignments %}
+                <li style="padding: 1rem; background: var(--bg-color); margin-bottom: 0.5rem; border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>Hospital: {{ a.req.hospital_name }}</strong>
+                        {% set urgency_color = 'red' if a.req.urgency_level == 'Critical' else 'orange' %}
+                        <span style="color: {{ urgency_color }}; font-weight: bold; font-size: 0.85em;">{{ a.req.urgency_level }}</span>
+                    </div>
+                    <p style="font-size: 0.9em; margin-bottom: 0.8rem;">Patient: {{ a.req.patient_name }} ({{ a.req.blood_group }})</p>
+                    <form method="POST" action="{{ url_for('donor_assignment_reply', assignment_id=a.id) }}" style="display: flex; gap: 10px;">
+                        <button type="submit" name="action" value="accept" class="btn btn-primary" style="flex: 1; padding: 0.5rem; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer; text-decoration: none; box-sizing: border-box;">Accept</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger" style="flex: 1; padding: 0.5rem; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer; text-decoration: none; box-sizing: border-box;">Reject</button>
+                    </form>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 4px solid #c62828;">
+            <h3 style="color: #c62828;"><i class="fas fa-ambulance"></i> Emergency Requests</h3>
+            {% if nearby_requests %}
+                <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                {% for nr in nearby_requests %}
+                    <li style="padding: 1rem; background: var(--bg-color); margin-bottom: 0.5rem; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>{{ nr.blood_group }} needed!</strong>
+                            {% set nr_urgency_color = 'red' if nr.urgency_level == 'Critical' else 'orange' %}
+                            <span style="color: {{ nr_urgency_color }}; font-weight: bold; font-size: 0.85em;">{{ nr.urgency_level }}</span>
+                        </div>
+                        <p style="font-size: 0.9em; margin-bottom: 0.8rem;"><i class="fas fa-hospital"></i> {{ nr.hospital_name }}</p>
+                        <a href="{{ url_for('donor_requests') }}" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.5rem; background: var(--primary); color: white; border: none; border-radius: 3px; cursor: pointer; text-decoration: none; box-sizing: border-box;">View Match</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #666; margin-top: 1rem; text-align: center;">No active emergencies nearby.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

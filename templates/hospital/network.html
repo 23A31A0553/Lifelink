@@ -1,0 +1,156 @@
+{% extends 'hospital/base.html' %}
+{% block hospital_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2><i class="fas fa-network-wired"></i> Hospital Network Coordination</h2>
+</div>
+
+<div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 300px;">
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+            <h3>Request Blood from Network</h3>
+            <form method="POST" action="{{ url_for('hospital_network') }}" style="margin-top: 1rem;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 5px;">Target Hospital <small>(Optional - leave blank for all)</small></label>
+                    <select name="target_hospital_id" style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                        <option value="">-- Broadcast to All Hospitals --</option>
+                        {% for h in hospitals %}
+                        <option value="{{ h.id }}">{{ h.name }} ({{ h.city }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Blood Group</label>
+                        <select name="blood_group" required style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 5px;">Quantity</label>
+                        <input type="number" name="quantity" value="1" min="1" required style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                    </div>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 5px;">Urgency Level</label>
+                    <select name="urgency_level" required style="width: 100%; padding: 0.8rem; border-radius: 5px; border: 1px solid var(--border-color);">
+                        <option>Medium</option><option>High</option><option>Critical</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn" style="width: 100%; padding: 1rem; background: var(--primary); font-weight: bold;"><i class="fas fa-paper-plane"></i> Send Request</button>
+            </form>
+        </div>
+
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3>Nearby Active Hospitals</h3>
+            <ul style="list-style-type: none; padding: 0; margin-top: 1rem;">
+                {% for h in hospitals %}
+                <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <span><i class="fas fa-hospital-alt"></i> <strong>{{ h.name }}</strong></span>
+                    <span style="font-size: 0.9em; color: #666;">{{ h.city }}</span>
+                </li>
+                {% else %}
+                <li style="padding: 10px; color: #666;">No other hospitals in your network yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div style="flex: 1; min-width: 300px;">
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+            <h3><i class="fas fa-inbox"></i> Incoming Requests</h3>
+            {% if in_reqs %}
+            <ul style="list-style-type: none; padding: 0; margin-top: 1rem;">
+                {% for r in in_reqs if r.status == 'Pending' %}
+                <li style="padding: 15px; border-bottom: 1px solid #eee; background: #fff8e1; border-left: 4px solid #f57c00; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>{{ r.quantity }} Units of {{ r.blood_group }}</strong><br>
+                        <small>From Hospital #{{ r.requester_hospital_id }} - Urgency: {{ r.urgency_level }}</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('hospital_network_reply', req_id=r.id) }}" style="display: flex; gap: 5px;">
+                        <button type="submit" name="action" value="accept" class="btn" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Accept and Provide Blood"><i class="fas fa-check"></i></button>
+                        <button type="submit" name="action" value="reject" class="btn" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Decline"><i class="fas fa-times"></i></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color: #666; margin-top: 1rem;">No incoming network requests.</p>
+            {% endif %}
+
+            <h3 style="margin-top: 2rem; color: #d32f2f;"><i class="fas fa-exclamation-triangle"></i> Emergency Broadcasts</h3>
+            {% if active_broadcasts %}
+            <ul style="list-style-type: none; padding: 0; margin-top: 1rem;">
+                {% for b in active_broadcasts %}
+                <li style="padding: 15px; border-bottom: 1px solid #eee; background: #ffebee; border-left: 4px solid #d32f2f; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>{{ b.quantity }} Units of {{ b.blood_group }} (URGENT)</strong><br>
+                        <small>From Hospital #{{ b.hospital_id }} - Expires: {{ b.expires_at.strftime('%m/%d %H:%M') }}</small>
+                    </div>
+                    <form method="POST" action="{{ url_for('hospital_broadcast_reply', broadcast_id=b.id) }}" style="display: flex; gap: 5px;">
+                        <button type="submit" name="action" value="accept" class="btn" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Accept Broadcast"><i class="fas fa-check"></i></button>
+                        <button type="submit" name="action" value="reject" class="btn" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Dismiss Broadcast"><i class="fas fa-times"></i></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color: #666; margin-top: 1rem;">No active emergency broadcasts.</p>
+            {% endif %}
+        </div>
+
+        <div style="background: var(--surface); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3><i class="fas fa-paper-plane"></i> Outgoing Requests</h3>
+            {% if out_reqs %}
+            <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Group/Qty</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Status</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in out_reqs %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">{{ r.quantity }}x {{ r.blood_group }}</td>
+                        <td style="padding: 10px;"><span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8em; background: {% if r.status == 'Pending' %}#fff3cd; color: #856404;{% else %}#e8f5e9; color: #2e7d32;{% endif %}">{{ r.status }}</span></td>
+                        <td style="padding: 10px;">{{ r.created_at.strftime('%m/%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666; margin-top: 1rem;">You haven't made any networking requests.</p>
+            {% endif %}
+        </div>
+            <h3 style="margin-top: 2rem;"><i class="fas fa-bullhorn"></i> My Emergency Broadcasts</h3>
+            {% if my_broadcasts %}
+            <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Group/Qty</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Status</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #ddd;">Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in my_broadcasts %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">{{ b.quantity }}x {{ b.blood_group }}</td>
+                        {% set bg_color = '#cce5ff' if b.status == 'Active' else ('#f8d7da' if b.status == 'Expired' else '#e8f5e9') %}
+                        {% set text_color = '#004085' if b.status == 'Active' else ('#721c24' if b.status == 'Expired' else '#2e7d32') %}
+                        <td style="padding: 10px;"><span style="padding: 4px 8px; border-radius: 12px; font-size: 0.8em; background: {{ bg_color }}; color: {{ text_color }};">{{ b.status }}</span></td>
+                        <td style="padding: 10px;">{{ b.created_at.strftime('%m/%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: #666; margin-top: 1rem;">You haven't made any emergency broadcasts.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2 style="margin-bottom: 1.5rem;">🩸 System-Wide Blood Inventory</h2>
+
+<!-- Summary Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    {% for bg in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+    {% set qty = stock_summary.get(bg, 0) %}
+    <div style="background: {% if qty == 0 %}#ffebee{% elif qty < 5 %}#fff8e1{% else %}#e8f5e9{% endif %}; padding: 1rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+        <div style="font-size: 1.4rem; font-weight: bold; color: {% if qty == 0 %}#c62828{% elif qty < 5 %}#f57c00{% else %}#2e7d32{% endif %};">{{ bg }}</div>
+        <div style="font-size: 2rem; font-weight: 900; color: {% if qty == 0 %}#c62828{% elif qty < 5 %}#f57c00{% else %}#2e7d32{% endif %};">{{ qty }}</div>
+        <div style="font-size: 0.75rem; color: #666;">units available</div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Per-Hospital Inventory -->
+{% for item in hospital_inventory %}
+{% set h = item.hospital %}
+{% set bags = item.bags %}
+<div style="background: var(--surface); border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 2rem; overflow: hidden;">
+    <div style="padding: 1rem 1.5rem; background: linear-gradient(90deg, #e53935, #b71c1c); color: white; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong style="font-size: 1.1rem;">🏥 {{ h.name }}</strong>
+            <span style="margin-left: 1rem; font-size: 0.9rem; opacity: 0.85;">{{ h.city }}</span>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; font-size: 0.9rem;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px;">
+                {{ item.available_count }} Available / {{ item.total_count }} Total
+            </span>
+            <a href="{{ url_for('admin_hospital_profile', hospital_id=h.id) }}" style="color: white; font-size: 0.85rem; text-decoration: underline;">View Profile →</a>
+        </div>
+    </div>
+
+    {% if bags %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Bag ID</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Blood Group</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Component</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Qty</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Donated On</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Expires On</th>
+                    <th style="padding: 10px 14px; text-align: left; border-bottom: 2px solid #ddd;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bag in bags %}
+                <tr style="border-bottom: 1px solid #eee; background: {% if bag.days_to_expiry is not none and bag.days_to_expiry < 0 %}#ffebee{% elif bag.days_to_expiry is not none and bag.days_to_expiry <= 7 %}#fff8e1{% else %}transparent{% endif %};">
+                    <td style="padding: 10px 14px;">#{{ bag.id }}</td>
+                    <td style="padding: 10px 14px;"><strong>{{ bag.blood_group }}</strong></td>
+                    <td style="padding: 10px 14px;">{{ bag.component_type }}</td>
+                    <td style="padding: 10px 14px;">{{ bag.quantity }}</td>
+                    <td style="padding: 10px 14px;">{{ bag.donation_date }}</td>
+                    <td style="padding: 10px 14px; {% if bag.days_to_expiry is not none and bag.days_to_expiry < 0 %}color: #c62828; font-weight: bold;{% elif bag.days_to_expiry is not none and bag.days_to_expiry <= 7 %}color: #f57c00; font-weight: bold;{% endif %}">
+                        {{ bag.expiry_date }}
+                        {% if bag.days_to_expiry is not none %}
+                            {% if bag.days_to_expiry < 0 %}<br><small>(Expired)</small>
+                            {% elif bag.days_to_expiry <= 7 %}<br><small>({{ bag.days_to_expiry }}d left)</small>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td style="padding: 10px 14px;">
+                        <span style="padding: 3px 9px; border-radius: 12px; font-size: 0.82em; font-weight: 600;
+                            background: {% if bag.status == 'Available' %}#e8f5e9; color: #2e7d32;{% elif bag.status == 'Used' %}#e3f2fd; color: #1565c0;{% else %}#ffebee; color: #c62828;{% endif %}">
+                            {{ bag.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; padding: 2rem; color: #999;">No blood bags recorded for this hospital.</p>
+    {% endif %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 3rem; color: #999;">
+    <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+    No approved hospitals found.
+</div>
+{% endfor %}
+{% endblock %}

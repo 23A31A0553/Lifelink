@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="color: var(--secondary);">Edit Profile</h2>
+    <div class="card">
+        <form method="POST">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" value="{{ user.full_name }}" required>
+            </div>
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" name="age" value="{{ user.age }}" required>
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" name="city" value="{{ user.city }}" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" value="{{ user.email }}" required>
+            </div>
+            <div class="form-group">
+                <label>Blood Group</label>
+                <select name="blood_group">
+                    <option value="A+" {{ 'selected' if user.blood_group=='A+' }}>A+</option>
+                    <option value="A-" {{ 'selected' if user.blood_group=='A-' }}>A-</option>
+                    <option value="B+" {{ 'selected' if user.blood_group=='B+' }}>B+</option>
+                    <option value="B-" {{ 'selected' if user.blood_group=='B-' }}>B-</option>
+                    <option value="O+" {{ 'selected' if user.blood_group=='O+' }}>O+</option>
+                    <option value="O-" {{ 'selected' if user.blood_group=='O-' }}>O-</option>
+                    <option value="AB+" {{ 'selected' if user.blood_group=='AB+' }}>AB+</option>
+                    <option value="AB-" {{ 'selected' if user.blood_group=='AB-' }}>AB-</option>
+                </select>
+            </div>
+
+            <h4>Health Conditions (Check if applicable)</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                <label><input type="checkbox" name="smoking" {{ 'checked' if user.smoking }}> Smoking</label>
+                <label><input type="checkbox" name="drinking" {{ 'checked' if user.drinking }}> Drinking</label>
+                <label><input type="checkbox" name="bp" {{ 'checked' if user.bp }}> BP</label>
+                <label><input type="checkbox" name="sugar" {{ 'checked' if user.sugar }}> Sugar</label>
+            </div>
+
+            <button type="submit" class="btn">Save Changes</button>
+            <a href="{{ url_for('profile') }}" class="btn" style="background: #999;">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

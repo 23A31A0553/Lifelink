@@ -1,0 +1,60 @@
+{% extends 'donor/base.html' %}
+{% block donor_content %}
+<h2 style="margin-bottom: 1.5rem;"><i class="fas fa-map-marked-alt"></i> Regional Emergency Map</h2>
+
+<div id="map" style="width: 100%; height: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"></div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isDark = document.body.getAttribute('data-theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Center map on donor's loc
+    const donorLat = {{ current_user.latitude or 0 }};
+    const donorLng = {{ current_user.longitude or 0 }};
+    const map = L.map('map').setView([donorLat, donorLng], 12);
+
+    if (isDark) {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }).addTo(map);
+    } else {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    }
+
+    // Donor Marker (Blue)
+    const donorIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        iconSize: [25, 41], iconAnchor: [12, 41]
+    });
+    L.marker([donorLat, donorLng], {icon: donorIcon}).addTo(map)
+     .bindPopup('<b>You are here</b><br>Available: {{ "Yes" if current_user.is_available else "No" }}')
+     .openPopup();
+
+    // Hospitals Marker (Green)
+    const hospIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        iconSize: [25, 41], iconAnchor: [12, 41]
+    });
+    {% for h in hospitals %}
+    L.marker([{{ h.latitude }}, {{ h.longitude }}], {icon: hospIcon}).addTo(map)
+     .bindPopup('<b>{{ h.name }}</b><br>Hospital Facility');
+    {% endfor %}
+
+    // Active Requests Marker (Red)
+    const reqIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        iconSize: [25, 41], iconAnchor: [12, 41]
+    });
+    {% for r in requests %}
+    L.marker([{{ r.req_latitude }}, {{ r.req_longitude }}], {icon: reqIcon}).addTo(map)
+     .bindPopup('<b>Critical: {{ r.blood_group }}</b><br>{{ r.hospital_name }}<br><a href="{{ url_for("donor_requests") }}">View Requests List</a>');
+    {% endfor %}
+});
+</script>
+{% endblock %}
